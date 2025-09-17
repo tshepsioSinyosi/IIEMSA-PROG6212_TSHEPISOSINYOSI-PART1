@@ -1,0 +1,121 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manager Dashboard";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4" style="color:#007ACC;">Manager Dashboard</h2>
+    <p class="text-center mb-5">Review all claims submitted by lecturers and approve/reject as necessary.</p>
+
+    <!-- Quick Action Buttons -->
+    <div class="d-flex justify-content-center flex-wrap gap-3 mb-4">
+        <button class="btn btn-primary btn-lg">View All Claims</button>
+        <button class="btn btn-success btn-lg">Approve Selected</button>
+        <button class="btn btn-danger btn-lg">Reject Selected</button>
+        <button class="btn btn-info btn-lg">Generate Report</button>
+    </div>
+
+    <!-- Claims Table -->
+    <table class="table table-hover text-center">
+        <thead style="background: linear-gradient(45deg,#007ACC,#00CFFF); color:white;">
+            <tr>
+                <th>Lecturer</th>
+                <th>Month</th>
+                <th>Hours Worked</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Dr. Smith</td>
+                <td>July 2025</td>
+                <td>40</td>
+                <td>$800</td>
+                <td><span class="badge bg-warning text-dark">Pending</span></td>
+                <td>
+                    <button class="btn btn-success btn-sm btn-action">Approve</button>
+                    <button class="btn btn-danger btn-sm btn-action">Reject</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Prof. Johnson</td>
+                <td>June 2025</td>
+                <td>35</td>
+                <td>$700</td>
+                <td><span class="badge bg-success">Approved</span></td>
+                <td>
+                    <button class="btn btn-secondary btn-sm btn-action" disabled>Approved</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<style>
+    /* Action buttons */
+    .btn-action {
+        font-weight: bold;
+        padding: 5px 15px;
+        border-radius: 6px;
+        transition: 0.3s;
+    }
+
+        .btn-action:hover {
+            opacity: 0.85;
+        }
+
+    /* Quick action buttons with gradient */
+    .btn-primary {
+        background: linear-gradient(45deg,#007ACC,#00CFFF);
+        color: white;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg,#005B99,#00A7CC);
+        }
+
+    .btn-success {
+        background: linear-gradient(45deg,#28a745,#85e085);
+        color: white;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+        .btn-success:hover {
+            background: linear-gradient(45deg,#1e7e34,#5cb85c);
+        }
+
+    .btn-danger {
+        background: linear-gradient(45deg,#dc3545,#ff6666);
+        color: white;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+        .btn-danger:hover {
+            background: linear-gradient(45deg,#a71d2a,#ff4d4d);
+        }
+
+    .btn-info {
+        background: linear-gradient(45deg,#17a2b8,#66d9e8);
+        color: white;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+        .btn-info:hover {
+            background: linear-gradient(45deg,#117a8b,#33c3d3);
+        }
+</style>

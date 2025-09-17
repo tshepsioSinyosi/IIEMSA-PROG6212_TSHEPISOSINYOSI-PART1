@@ -1,0 +1,35 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Lecturer Dashboard";
+}
+
+<div class="container text-center mt-5">
+    <h2 style="color:#007ACC;">Welcome, Lecturer</h2>
+
+    <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+        <a href="/Lecturer/ClaimHistory" class="btn btn-gradient btn-lg">Claim History</a>
+        <a href="/Lecturer/SubmitClaim" class="btn btn-success btn-lg">Submit Claim</a>
+        <a href="/Lecturer/UploadDocument" class="btn btn-info btn-lg">Upload Document</a>
+    </div>
+</div>
+
+<style>
+    .btn-gradient {
+        background: linear-gradient(45deg, #007ACC, #00CFFF);
+        color: white;
+        font-weight: bold;
+        padding: 15px 30px;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+        .btn-gradient:hover {
+            background: linear-gradient(45deg, #005B99, #00A7CC);
+            color: white;
+        }
+
+    .btn-lg {
+        font-size: 1.2rem;
+        padding: 15px 25px;
+    }
+</style>

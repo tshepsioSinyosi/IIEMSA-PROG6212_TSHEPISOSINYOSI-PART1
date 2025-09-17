@@ -1,0 +1,40 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <h2 class="text-center mb-4" style="color:#007ACC;">Login</h2>
+        <form>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" placeholder="Enter email" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" placeholder="Enter password" />
+            </div>
+
+            <!-- Colored login button -->
+            <a href="/Lecturer/Dashboard" class="btn btn-gradient w-100">Login</a>
+
+        </form>
+    </div>
+</div>
+
+<style>
+    .btn-gradient {
+        background: linear-gradient(45deg, #007ACC, #00CFFF);
+        color: white;
+        font-weight: bold;
+        padding: 10px 0;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+        .btn-gradient:hover {
+            background: linear-gradient(45deg, #005B99, #00A7CC);
+            color: white;
+        }
+</style>

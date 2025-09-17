@@ -1,0 +1,53 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Coordinator Dashboard";
+}
+
+<div class="container text-center mt-5">
+    <h2 style="color:#007ACC;">Coordinator Dashboard</h2>
+    <p class="mb-4">Approve or reject lecturer claims below.</p>
+
+    <div class="d-flex justify-content-center flex-wrap gap-3">
+        <a href="/ClaimHistory" class="btn btn-blue">Review Claims</a>
+        <button class="btn btn-red">Approve Selected</button>
+        <button class="btn btn-gray">Reject Selected</button>
+    </div>
+</div>
+
+<style>
+    .btn-blue {
+        background: linear-gradient(45deg,#007ACC,#00CFFF);
+        color: white;
+        font-weight: bold;
+        padding: 12px 25px;
+        border-radius: 8px;
+    }
+
+        .btn-blue:hover {
+            background: linear-gradient(45deg,#005B99,#00A7CC);
+        }
+
+    .btn-red {
+        background: linear-gradient(45deg,#dc3545,#ff6666);
+        color: white;
+        font-weight: bold;
+        padding: 12px 25px;
+        border-radius: 8px;
+    }
+
+        .btn-red:hover {
+            background: linear-gradient(45deg,#a71d2a,#ff4d4d);
+        }
+
+    .btn-gray {
+        background: linear-gradient(45deg,#6c757d,#b5b5b5);
+        color: white;
+        font-weight: bold;
+        padding: 12px 25px;
+        border-radius: 8px;
+    }
+
+        .btn-gray:hover {
+            background: linear-gradient(45deg,#5a6268,#999999);
+        }
+</style>
