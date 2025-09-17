@@ -25,4 +25,12 @@ public class LecturerController : Controller
     {
         return View();
     }
+
+    // All Claims
+    // Submitted Claims (only claims submitted by this lecturer)
+public IActionResult SubmittedClaims()
+{
+    return View();
+}
+
 }

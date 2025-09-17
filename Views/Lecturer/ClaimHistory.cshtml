@@ -1,19 +1,18 @@
 ﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Claim History";
+    ViewData["Title"] = "Claim Status";
 }
 
 <div class="container mt-5">
-    <h2 class="text-center mb-4" style="color:#007ACC;">Claim History</h2>
+    <h2 class="text-center mb-4" style="color:#007ACC;">Claim History (Status)</h2>
 
     <table class="table table-hover text-center">
         <thead style="background: linear-gradient(45deg,#007ACC,#00CFFF); color:white;">
             <tr>
                 <th>Month</th>
-                <th>Hours Worked</th>
+                <th>Total Hours</th>
                 <th>Total Amount</th>
                 <th>Status</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -21,34 +20,14 @@
                 <td>July 2025</td>
                 <td>40</td>
                 <td>$800</td>
-                <td><span class="badge" style="background:#fd7e14;">Pending</span></td>
-                <td>
-                    <button class="btn btn-success btn-sm btn-action">Approve</button>
-                    <button class="btn btn-danger btn-sm btn-action">Reject</button>
-                </td>
+                <td><span class="badge bg-warning text-dark">Pending</span></td>
             </tr>
             <tr>
                 <td>June 2025</td>
                 <td>35</td>
                 <td>$700</td>
-                <td><span class="badge" style="background:#28a745;">Approved</span></td>
-                <td>
-                    <button class="btn btn-secondary btn-sm btn-action" disabled>Approved</button>
-                </td>
+                <td><span class="badge bg-success">Approved</span></td>
             </tr>
         </tbody>
     </table>
 </div>
-
-<style>
-    .btn-action {
-        font-weight: bold;
-        padding: 5px 15px;
-        border-radius: 6px;
-        transition: 0.3s;
-    }
-
-        .btn-action:hover {
-            opacity: 0.8;
-        }
-</style>

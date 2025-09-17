@@ -3,33 +3,59 @@
     ViewData["Title"] = "Lecturer Dashboard";
 }
 
-<div class="container text-center mt-5">
-    <h2 style="color:#007ACC;">Welcome, Lecturer</h2>
+<div class="container mt-5">
+    <h2 class="text-center mb-4" style="color:#007ACC;">Lecturer Dashboard</h2>
+    <p class="text-center mb-5">Access your claims, submit new ones, and track your submissions.</p>
 
-    <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
-        <a href="/Lecturer/ClaimHistory" class="btn btn-gradient btn-lg">Claim History</a>
-        <a href="/Lecturer/SubmitClaim" class="btn btn-success btn-lg">Submit Claim</a>
-        <a href="/Lecturer/UploadDocument" class="btn btn-info btn-lg">Upload Document</a>
+    <!-- Dashboard Buttons -->
+    <div class="d-flex justify-content-center flex-wrap gap-3 mb-4">
+        <a class="btn btn-primary btn-lg" asp-controller="Lecturer" asp-action="SubmitClaim">Submit Claim</a>
+        <a class="btn btn-info btn-lg" asp-controller="Lecturer" asp-action="ClaimHistory">Claim History</a>
+        <a class="btn btn-success btn-lg" asp-controller="Lecturer" asp-action="UploadDocument">Upload Document</a>
+        <a class="btn btn-warning btn-lg" asp-controller="Lecturer" asp-action="AllClaims">All Claims</a>
     </div>
 </div>
 
 <style>
-    .btn-gradient {
-        background: linear-gradient(45deg, #007ACC, #00CFFF);
-        color: white;
+    .btn-lg {
         font-weight: bold;
-        padding: 15px 30px;
+        padding: 12px 25px;
         border-radius: 8px;
         transition: 0.3s;
+        color: white;
     }
 
-        .btn-gradient:hover {
-            background: linear-gradient(45deg, #005B99, #00A7CC);
-            color: white;
+    .btn-primary {
+        background: linear-gradient(45deg,#007ACC,#00CFFF);
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg,#005B99,#00A7CC);
         }
 
-    .btn-lg {
-        font-size: 1.2rem;
-        padding: 15px 25px;
+    .btn-info {
+        background: linear-gradient(45deg,#17a2b8,#66d9e8);
     }
+
+        .btn-info:hover {
+            background: linear-gradient(45deg,#117a8b,#33c3d3);
+        }
+
+    .btn-success {
+        background: linear-gradient(45deg,#28a745,#85e085);
+    }
+
+        .btn-success:hover {
+            background: linear-gradient(45deg,#1e7e34,#5cb85c);
+        }
+
+    .btn-warning {
+        background: linear-gradient(45deg,#ffc107,#ffde59);
+        color: black;
+    }
+
+        .btn-warning:hover {
+            background: linear-gradient(45deg,#e0a800,#ffe066);
+            color: black;
+        }
 </style>
