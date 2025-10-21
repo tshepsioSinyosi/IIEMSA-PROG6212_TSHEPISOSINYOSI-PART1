@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using ContractMonthlyClaimsSystem.Models; // *** IMPORTANT: Update this to your correct Models namespace ***
+using ContractMonthlyClaimsSystem.Models;
+using ContractClaimSystem.Data; // Import the Data namespace for SeedData
 
 namespace ContractClaimSystem
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args) // *** Changed to async Task ***
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -35,20 +36,37 @@ namespace ContractClaimSystem
             builder.Services.AddDefaultIdentity<User>(options =>
             {
                 // Set identity options here (e.g., password complexity)
-                options.SignIn.RequireConfirmedAccount = false; // Set to true if email confirmation is required
+                options.SignIn.RequireConfirmedAccount = false;
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequiredLength = 6;
             })
-                .AddRoles<IdentityRole>() // *** Essential for Lecturer/Coordinator roles ***
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             // 4. Add MVC (Controllers and Views)
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
+
+            // 5. Run SeedData Logic (MUST run after app.Build())
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                try
+                {
+                    await SeedData.InitializeAsync(services);
+                    logger.LogInformation("Database roles and initial users seeded successfully.");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An error occurred seeding the DB.");
+                }
+            }
+            // End SeedData Logic
 
             // Configure the HTTP request pipeline
             if (!app.Environment.IsDevelopment())
@@ -61,7 +79,7 @@ namespace ContractClaimSystem
             app.UseStaticFiles(); // Enables serving CSS, JavaScript, and images
             app.UseRouting();
 
-            // *** Authentication MUST come before Authorization ***
+            // Authentication MUST come before Authorization
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -70,7 +88,7 @@ namespace ContractClaimSystem
                 name: "default",
                 pattern: "{controller=Account}/{action=Login}/{id?}");
 
-            app.Run();
+            await app.RunAsync(); // *** Changed to await app.RunAsync() ***
         }
     }
 }

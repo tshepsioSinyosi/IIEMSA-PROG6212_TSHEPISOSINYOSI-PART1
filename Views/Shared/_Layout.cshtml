@@ -7,58 +7,159 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome for Icons (Optional but helps with aesthetics) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <style>
+        :root {
+            --primary-color: #007bff; /* Blue */
+            --secondary-color: #6c757d; /* Gray */
+            --highlight-color: #ffc107; /* Yellow for highlight */
+            --background-color: #f8f9fa; /* Light background */
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
         body {
             padding-top: 70px;
-            background-color: #f5f5f5;
+            background-color: var(--background-color);
+        }
+
+        .navbar-custom {
+            background-color: var(--primary-color) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .navbar-brand {
-            font-weight: bold;
+            font-weight: 700;
             color: #fff !important;
+            text-transform: uppercase;
         }
 
         .nav-link {
-            font-weight: bold;
-            color: #fff !important;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9) !important;
+            transition: color 0.3s ease;
         }
 
             .nav-link:hover {
-                color: #ffd700 !important;
+                color: var(--highlight-color) !important;
             }
+
+        .user-info {
+            color: #fff;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-role {
+            font-size: 0.85rem;
+            padding: 2px 8px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.2);
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        /* Style for the Logout button to look like a link */
+        .btn-link.nav-link {
+            padding: .5rem 1rem;
+            text-decoration: none;
+        }
 
         .container {
             margin-top: 30px;
-            padding: 20px;
+            padding: 30px;
             background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            min-height: calc(100vh - 120px); /* Ensures content area looks substantial */
         }
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" asp-controller="Account" asp-action="Login">CMCS</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <i class="fas fa-file-contract me-2"></i> CMCS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Lecturer" asp-action="Dashboard">Lecturer Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Coordinator" asp-action="Dashboard">Coordinator Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Manager" asp-action="Dashboard">Manager Dashboard</a>
-                    </li>
+                <ul class="navbar-nav ms-auto align-items-center">
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        // Display user information and role
+                        <li class="nav-item">
+                            <!-- This assumes your ApplicationUser model has a FullName property -->
+                            <span class="user-info">
+                                <i class="fas fa-user-circle me-1"></i> Hello, @User.Identity.Name!
+                                @if (User.IsInRole("Coordinator"))
+                                {
+                                    <span class="user-role">COORDINATOR</span>
+                                }
+                                else if (User.IsInRole("Lecturer"))
+                                {
+                                    <span class="user-role">LECTURER</span>
+                                }
+                                else if (User.IsInRole("Manager"))
+                                {
+                                    <span class="user-role">MANAGER</span>
+                                }
+                            </span>
+                        </li>
+
+                        // Coordinator Dashboard link - visible only if user is Coordinator
+                        @if (User.IsInRole("Coordinator"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="CoordinatorDashboard">
+                                    <i class="fas fa-chart-line me-1"></i> Dashboard
+                                </a>
+                            </li>
+                        }
+
+                        // Lecturer Dashboard link - visible only if user is Lecturer
+                        @if (User.IsInRole("Lecturer"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="LecturerDashboard">
+                                    <i class="fas fa-calendar-check me-1"></i> Claims Board
+                                </a>
+                            </li>
+                        }
+
+                        // Manager Dashboard link - visible only if user is Manager (If required)
+                        @if (User.IsInRole("Manager"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="ManagerDashboard">
+                                    <i class="fas fa-user-tie me-1"></i> Management
+                                </a>
+                            </li>
+                        }
+
+                        // Logout Link - visible for all authenticated users
+                        <li class="nav-item">
+                            <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                <button type="submit" class="nav-link btn btn-link text-white" style="font-weight: bold;">
+                                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    }
+                    else
+                    {
+                        // Login Link - visible only if user is NOT authenticated
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Login">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
