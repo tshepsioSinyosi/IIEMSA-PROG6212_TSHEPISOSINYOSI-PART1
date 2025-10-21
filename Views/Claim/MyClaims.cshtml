@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Claim>
+<h2>My Claims</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Hours</th>
+            <th>Rate</th>
+            <th>Submitted</th>
+            <th>Status</th>
+            <th>Documents</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Id</td>
+                <td>@c.HoursWorked</td>
+                <td>@c.HourlyRate</td>
+                <td>@c.SubmissionDate.ToLocalTime().ToString("g")</td>
+                <td>
+                    @switch (c.Status)
+                    {
+                        case ClaimStatus.Pending:
+                            <span style="background:yellow">Pending</span>
+                            ; break;
+                        case ClaimStatus.Approved:
+
+                            <span style="background:lightgreen">Approved</span>
+                            ; break;
+                        case ClaimStatus.Rejected:
+
+                            <span style="background:salmon">Rejected</span>
+                            ; break;
+                    }
+                </td>
+                <td>
+                    @if (c.SupportingDocuments != null && c.SupportingDocuments.Any())
+                    {
+                        foreach (var d in c.SupportingDocuments)
+                        {
+                            <a asp-controller="Claim" asp-action="DownloadDoc" asp-route-id="@d.Id">@d.FileName</a>
+                
+                            <br />
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

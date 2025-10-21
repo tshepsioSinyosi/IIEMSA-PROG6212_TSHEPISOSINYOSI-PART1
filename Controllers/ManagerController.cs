@@ -1,22 +1,39 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using ContractMonthlyClaimsSystem.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
-public class ManagerController : Controller
+namespace ContractClaimSystem.Controllers
 {
-    // Manager Dashboard
-    public IActionResult Dashboard()
+    // Authorize Manager to access the dashboard
+    [Authorize(Roles = "Manager")]
+    public class ManagerController : Controller
     {
-        return View();
-    }
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> _userManager;
 
-    // Claim Approval
-    public IActionResult ApproveClaims()
-    {
-        return View();
-    }
+        public ManagerController(ApplicationDbContext context, UserManager<User> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
 
-    // Track Claims
-    public IActionResult TrackClaims()
-    {
-        return View();
+        // GET: /Manager/Dashboard
+        // Shows all claims currently awaiting Manager approval (Pending status)
+        public async Task<IActionResult> Dashboard()
+        {
+            // Fetch all claims that are currently marked as "Pending"
+            // We include the Lecturer (User) data so we can display their name in the view
+            var pendingClaims = _context.Claims
+    .Where(c => c.Status == ClaimStatus.Pending)
+    .ToList();
+
+
+            return View(pendingClaims);
+        }
     }
 }

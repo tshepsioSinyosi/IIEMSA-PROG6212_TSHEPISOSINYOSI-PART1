@@ -1,0 +1,33 @@
+﻿@model ContractMonthlyClaimsSystem.Models.ClaimSubmissionViewModel
+
+@{
+    ViewData["Title"] = "Submit Claim";
+}
+<h2>Submit Claim</h2>
+
+<form asp-action="Submit" method="post" enctype="multipart/form-data">
+    <div>
+        <label asp-for="HoursWorked"></label>
+        <input asp-for="HoursWorked" />
+        <span asp-validation-for="HoursWorked"></span>
+    </div>
+    <div>
+        <label asp-for="HourlyRate"></label>
+        <input asp-for="HourlyRate" />
+        <span asp-validation-for="HourlyRate"></span>
+    </div>
+    <div>
+        <label asp-for="Notes"></label>
+        <textarea asp-for="Notes"></textarea>
+    </div>
+    <div>
+        <label>Supporting Documents (optional)</label>
+        <input type="file" name="SupportingFiles" multiple />
+        <small>Allowed: pdf, png, jpg, jpeg, docx. Max 5MB each.</small>
+    </div>
+    <button type="submit">Submit Claim</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

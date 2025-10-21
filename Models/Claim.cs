@@ -1,47 +1,30 @@
-﻿using System;
+﻿// Models/Claim.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ContractClaimSystem.Models;
+using ContractMonthlyClaimsSystem.Models;
 
-namespace ContractMonthlyClaimsSystem.Models
+public class Claim
 {
-    public enum ClaimStatus
-    {
-        Pending,
-        Approved,
-        Rejected
-    }
+    [Key]
+    public int Id { get; set; }
+    public User Lecturer { get; set; }
+    
 
-    public class Claim
-    {
-        [Key]
-        public int Id { get; set; }
+    [Required]
+    public string LecturerId { get; set; } // FK to Identity User (User.Id)
 
-        [Required]
-        [ForeignKey("Lecturer")]
-        public string LecturerId { get; set; }
+    [Required]
+    public double HoursWorked { get; set; }
 
-        [Required]
-        [Range(0, double.MaxValue)]
-        public double HoursWorked { get; set; }
+    [Required]
+    public decimal HourlyRate { get; set; }
 
-        [Required]
-        [Range(0, double.MaxValue)]
-        public decimal HourlyRate { get; set; }
+    public string Notes { get; set; }
 
-        [MaxLength(500)]
-        public string Notes { get; set; }
+    public DateTime SubmissionDate { get; set; } = DateTime.UtcNow;
 
-        [Required]
-        public DateTime SubmissionDate { get; set; }
+    public ClaimStatus Status { get; set; } = ClaimStatus.Pending;
 
-        [Required]
-        public ClaimStatus Status { get; set; } = ClaimStatus.Pending;
-
-        // Navigation property
-        public virtual User Lecturer { get; set; }
-
-        // Navigation property for supporting documents
-        public virtual ICollection<SupportingDocument> SupportingDocuments { get; set; }
-    }
+    // Navigation
+    public ICollection<SupportingDocument> SupportingDocuments { get; set; }
 }

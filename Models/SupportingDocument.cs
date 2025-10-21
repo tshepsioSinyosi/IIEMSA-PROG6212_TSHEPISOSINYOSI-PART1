@@ -1,30 +1,25 @@
-﻿using System;
+﻿// Models/SupportingDocument.cs
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ContractMonthlyClaimsSystem.Models
+public class SupportingDocument
 {
-    public class SupportingDocument
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        [Required]
-        [ForeignKey("Claim")]
-        public int ClaimId { get; set; }
+    [Required]
+    public int ClaimId { get; set; } // FK
 
-        [Required]
-        [MaxLength(255)]
-        public string FileName { get; set; }
+    [Required]
+    public string FileName { get; set; } // original filename
 
-        [Required]
-        [MaxLength(500)]
-        public string FilePath { get; set; }
+    [Required]
+    public string StoredFileName { get; set; } // GUID name on disk
 
-        [Required]
-        public DateTime UploadDate { get; set; }
+    [Required]
+    public string FilePath { get; set; } // absolute or relative path
 
-        // Navigation property
-        public virtual Claim Claim { get; set; }
-    }
+    public DateTime UploadDate { get; set; } = DateTime.UtcNow;
+
+    // Navigation
+    public Claim Claim { get; set; }
 }

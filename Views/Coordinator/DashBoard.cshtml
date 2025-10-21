@@ -1,53 +1,74 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Coordinator Dashboard";
+﻿@using ContractMonthlyClaimsSystem.Models
+@model List<Claim>
+
+@{
+    ViewData["Title"] = "Coordinator Dashboard - Pending Claims";
 }
 
-<div class="container text-center mt-5">
-    <h2 style="color:#007ACC;">Coordinator Dashboard</h2>
-    <p class="mb-4">Approve or reject lecturer claims below.</p>
+<div class="container py-5">
+    <h1 class="text-primary-emphasis mb-4">Claims Awaiting Review (@(Model?.Count() ?? 0))</h1>
 
-    <div class="d-flex justify-content-center flex-wrap gap-3">
-        <a href="/ClaimHistory" class="btn btn-blue">Review Claims</a>
-        <button class="btn btn-red">Approve Selected</button>
-        <button class="btn btn-gray">Reject Selected</button>
-    </div>
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-success text-center mt-5" role="alert">
+            <i class="fas fa-check-circle me-2"></i> All clear! There are currently no claims awaiting your review.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Claim ID</th>
+                                <th>Lecturer</th>
+                                <th>Date Submitted</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model)
+                            {
+                                <tr>
+                                    <td>@claim.ClaimId</td>
+                                    <td>@claim.Lecturer.FullName</td>
+                                    <td>@claim.SubmissionDate.ToShortDateString()</td>
+                                    <td>@(claim.HoursWorked* claim.HourlyRate).ToString("C")</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark fw-bold">@claim.Status</span>
+                                    </td>
+                                    <td>
+                                        <!-- View Details Button -->
+                                        <a asp-controller="Claim" asp-action="Details" asp-route-id="@claim.ClaimId" class="btn btn-sm btn-info text-white me-2" title="Review Details and Documents">
+                                            <i class="fas fa-search"></i> Review
+                                        </a>
+
+                                        <!-- Approve Button (POST action to ClaimController) -->
+                                        <form asp-controller="Claim" asp-action="Approve" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to APPROVE Claim ID @claim.ClaimId?');">
+                                            <input type="hidden" name="id" value="@claim.ClaimId" />
+                                            <button type="submit" class="btn btn-sm btn-success" title="Approve Claim">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                        </form>
+
+                                        <!-- Reject Button (POST action to ClaimController) -->
+                                        <form asp-controller="Claim" asp-action="Reject" method="post" style="display:inline; margin-left: 5px;" onsubmit="return confirm('Are you sure you want to REJECT Claim ID @claim.ClaimId?');">
+                                            <input type="hidden" name="id" value="@claim.ClaimId" />
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Reject Claim">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
 </div>
-
-<style>
-    .btn-blue {
-        background: linear-gradient(45deg,#007ACC,#00CFFF);
-        color: white;
-        font-weight: bold;
-        padding: 12px 25px;
-        border-radius: 8px;
-    }
-
-        .btn-blue:hover {
-            background: linear-gradient(45deg,#005B99,#00A7CC);
-        }
-
-    .btn-red {
-        background: linear-gradient(45deg,#dc3545,#ff6666);
-        color: white;
-        font-weight: bold;
-        padding: 12px 25px;
-        border-radius: 8px;
-    }
-
-        .btn-red:hover {
-            background: linear-gradient(45deg,#a71d2a,#ff4d4d);
-        }
-
-    .btn-gray {
-        background: linear-gradient(45deg,#6c757d,#b5b5b5);
-        color: white;
-        font-weight: bold;
-        padding: 12px 25px;
-        border-radius: 8px;
-    }
-
-        .btn-gray:hover {
-            background: linear-gradient(45deg,#5a6268,#999999);
-        }
-</style>

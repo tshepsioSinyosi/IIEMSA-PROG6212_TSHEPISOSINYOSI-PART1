@@ -1,61 +1,75 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Lecturer Dashboard";
+﻿@using ContractMonthlyClaimsSystem.Models
+@model List<Claim>
+
+@{
+    ViewData["Title"] = "Lecturer Dashboard - Claim History";
 }
 
-<div class="container mt-5">
-    <h2 class="text-center mb-4" style="color:#007ACC;">Lecturer Dashboard</h2>
-    <p class="text-center mb-5">Access your claims, submit new ones, and track your submissions.</p>
+<div class="container py-5">
+    <h1 class="text-secondary-emphasis mb-4">Your Claim History & Status</h1>
+    <p class="lead text-muted">A record of all your submitted monthly claims and their current status.</p>
 
-    <!-- Dashboard Buttons -->
-    <div class="d-flex justify-content-center flex-wrap gap-3 mb-4">
-        <a class="btn btn-primary btn-lg" asp-controller="Lecturer" asp-action="SubmitClaim">Submit Claim</a>
-        <a class="btn btn-info btn-lg" asp-controller="Lecturer" asp-action="ClaimHistory">Claim History</a>
-        <a class="btn btn-success btn-lg" asp-controller="Lecturer" asp-action="UploadDocument">Upload Document</a>
-        <a class="btn btn-warning btn-lg" asp-controller="Lecturer" asp-action="AllClaims">All Claims</a>
-    </div>
+    <!-- Link to Submit New Claim -->
+    <a asp-controller="Claim" asp-action="Submit" class="btn btn-primary btn-lg mb-4 shadow-sm">
+        <i class="fas fa-plus-circle me-2"></i> Submit New Claim
+    </a>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info text-center mt-5" role="alert">
+            You have not submitted any claims yet. Use the button above to get started!
+        </div>
+    }
+    else
+    {
+        <div class="card shadow">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Claim ID</th>
+                                <th>Date Submitted</th>
+                                <th>Hours</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model)
+                            {
+                                <tr>
+                                    <td>@claim.ClaimId</td>
+                                    <td>@claim.SubmissionDate.ToShortDateString()</td>
+                                    <td>@claim.HoursWorked</td>
+                                    <td>@(claim.HoursWorked* claim.HourlyRate).ToString("C")</td>
+                                    <td>
+                                        @switch (claim.Status)
+                                        {
+                                            case "Approved":
+                                                <span class="badge bg-success fw-bold">APPROVED</span>
+                                                break;
+                                            case "Rejected":
+                                                <span class="badge bg-danger fw-bold">REJECTED</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-warning text-dark fw-bold">PENDING</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <!-- Lecturer can view their own details/documents, but cannot edit -->
+                                        <a asp-controller="Claim" asp-action="Details" asp-route-id="@claim.ClaimId" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
 </div>
-
-<style>
-    .btn-lg {
-        font-weight: bold;
-        padding: 12px 25px;
-        border-radius: 8px;
-        transition: 0.3s;
-        color: white;
-    }
-
-    .btn-primary {
-        background: linear-gradient(45deg,#007ACC,#00CFFF);
-    }
-
-        .btn-primary:hover {
-            background: linear-gradient(45deg,#005B99,#00A7CC);
-        }
-
-    .btn-info {
-        background: linear-gradient(45deg,#17a2b8,#66d9e8);
-    }
-
-        .btn-info:hover {
-            background: linear-gradient(45deg,#117a8b,#33c3d3);
-        }
-
-    .btn-success {
-        background: linear-gradient(45deg,#28a745,#85e085);
-    }
-
-        .btn-success:hover {
-            background: linear-gradient(45deg,#1e7e34,#5cb85c);
-        }
-
-    .btn-warning {
-        background: linear-gradient(45deg,#ffc107,#ffde59);
-        color: black;
-    }
-
-        .btn-warning:hover {
-            background: linear-gradient(45deg,#e0a800,#ffe066);
-            color: black;
-        }
-</style>
