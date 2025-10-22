@@ -35,7 +35,7 @@ PART2 "YOUTUBE VIDEO LINK
 	YOUTUBE VIDEO :https://youtu.be/g6UTeBxDR-s
 
 
-Part 2 Additions – Contract Monthly Claims System
+PART2 Additions – Contract Monthly Claims System
 
 
 
