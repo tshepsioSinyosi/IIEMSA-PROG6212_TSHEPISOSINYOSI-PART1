@@ -8,7 +8,7 @@ public class CoordinatorController : Controller
         return View();
     }
 
-    // Review Claims
+    // Review Claim
     public IActionResult ReviewClaims()
     {
         return View();
