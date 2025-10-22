@@ -36,7 +36,7 @@ namespace ContractClaimSystem.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // ✅ Create Claim
+            // ✅ Create Claim object
             var claim = new Models.Claim
             {
                 LecturerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
@@ -95,7 +95,7 @@ namespace ContractClaimSystem.Controllers
                     {
                         ClaimId = claim.ClaimId,
                         FileName = file.FileName, // original name
-                        FilePath = "/uploads/" + uniqueFileName // unique name on disk
+                        FilePath = "/uploads/" + uniqueFileName // saved unique path
                     };
 
                     _context.SupportingDocuments.Add(doc);
@@ -144,6 +144,7 @@ namespace ContractClaimSystem.Controllers
         // ===========================
         [Authorize(Roles = "Coordinator,Manager")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id)
         {
             var claim = await _context.Claims.FindAsync(id);
@@ -158,6 +159,7 @@ namespace ContractClaimSystem.Controllers
 
         [Authorize(Roles = "Coordinator,Manager")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(int id)
         {
             var claim = await _context.Claims.FindAsync(id);
@@ -171,7 +173,7 @@ namespace ContractClaimSystem.Controllers
         }
 
         // ===========================
-        // 5️⃣ DETAILS
+        // 5️⃣ CLAIM DETAILS
         // ===========================
         public async Task<IActionResult> Details(int id)
         {
@@ -219,6 +221,7 @@ namespace ContractClaimSystem.Controllers
         // ===========================
         [Authorize(Roles = "Lecturer")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var claim = await _context.Claims.FindAsync(id);

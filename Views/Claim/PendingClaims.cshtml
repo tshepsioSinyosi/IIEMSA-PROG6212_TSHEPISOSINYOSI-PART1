@@ -1,0 +1,51 @@
+﻿@model IEnumerable<ContractClaimSystem.Models.Claim>
+
+@{
+    ViewData["Title"] = "Pending Claims";
+}
+
+<h2>Pending Claims</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Lecturer</th>
+            <th>Hours Worked</th>
+            <th>Hourly Rate</th>
+            <th>Notes</th>
+            <th>Submission Date</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var claim in Model)
+        {
+            <tr>
+                <td>@claim.Lecturer.FullName</td>
+                <td>@claim.HoursWorked</td>
+                <td>@claim.HourlyRate</td>
+                <td>@claim.AdditionalNotes</td>
+                <td>@claim.SubmissionDate.ToShortDateString()</td>
+                <td>@claim.Status</td>
+                <td>
+                    <form asp-action="Approve" asp-route-id="@claim.ClaimId" method="post" style="display:inline">
+                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                    </form>
+                    <form asp-action="Reject" asp-route-id="@claim.ClaimId" method="post" style="display:inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
