@@ -1,7 +1,10 @@
 ﻿// Models/ClaimStatus.cs
-public enum ClaimStatus
+namespace ContractClaimSystem.Models
 {
-    Pending = 0,
-    Approved = 1,
-    Rejected = 2
+    public enum ClaimStatus
+    {
+        Pending = 0,
+        Approved = 1,
+        Rejected = 2
+    }
 }

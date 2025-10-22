@@ -1,4 +1,4 @@
-﻿@using ContractMonthlyClaimsSystem.Models
+﻿@using ContractClaimSystem.Models
 @model List<Claim>
 
 @{
@@ -43,14 +43,14 @@
                                     <td>@claim.ClaimId</td>
                                     <td>@claim.SubmissionDate.ToShortDateString()</td>
                                     <td>@claim.HoursWorked</td>
-                                    <td>@(claim.HoursWorked* claim.HourlyRate).ToString("C")</td>
+                                    <td>@((decimal)claim.HoursWorked * claim.HourlyRate).ToString("C")</td>
                                     <td>
                                         @switch (claim.Status)
                                         {
-                                            case "Approved":
+                                            case ClaimStatus.Approved:
                                                 <span class="badge bg-success fw-bold">APPROVED</span>
                                                 break;
-                                            case "Rejected":
+                                            case ClaimStatus.Rejected:
                                                 <span class="badge bg-danger fw-bold">REJECTED</span>
                                                 break;
                                             default:
@@ -59,7 +59,6 @@
                                         }
                                     </td>
                                     <td>
-                                        <!-- Lecturer can view their own details/documents, but cannot edit -->
                                         <a asp-controller="Claim" asp-action="Details" asp-route-id="@claim.ClaimId" class="btn btn-sm btn-outline-info">
                                             <i class="fas fa-eye"></i> View
                                         </a>
@@ -73,3 +72,9 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        console.log("Lecturer Dashboard loaded");
+    </script>
+}

@@ -1,65 +1,54 @@
-﻿// Controllers/VerificationController.cs
-using ContractMonthlyClaimsSystem.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using ContractClaimSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
-
-[Authorize(Roles = "Coordinator,Manager")]
-public class VerificationController : Controller
+namespace ContractClaimSystem.Controllers
 {
-    private readonly ApplicationDbContext _db;
-
-    public VerificationController(ApplicationDbContext db) => _db = db;
-
-    [HttpGet]
-    public async Task<IActionResult> PendingClaims()
+    [Authorize(Roles = "Coordinator, Manager")]
+    public class VerificationController : Controller
     {
-        var pending = await _db.Claims
-            .Where(c => c.Status == ClaimStatus.Pending)
-            .Include(c => c.SupportingDocuments)
-            .OrderBy(c => c.SubmissionDate)
-            .ToListAsync();
+        private readonly ApplicationDbContext _context;
 
-        return View(pending);
-    }
+        public VerificationController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ApproveClaim(int id)
-    {
-        var claim = await _db.Claims.FindAsync(id);
-        if (claim == null) return NotFound();
+        // Dashboard: Show pending claims
+        public async Task<IActionResult> Dashboard()
+        {
+            var pendingClaims = await _context.Claims
+                .Include(c => c.Lecturer)
+                .Where(c => c.Status == ClaimStatus.Pending)
+                .OrderByDescending(c => c.SubmissionDate)
+                .ToListAsync();
 
-        claim.Status = ClaimStatus.Approved;
-        await _db.SaveChangesAsync();
-        TempData["Success"] = "Claim approved";
-        return RedirectToAction(nameof(PendingClaims));
-    }
+            return View(pendingClaims);
+        }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RejectClaim(int id, string reason = null)
-    {
-        var claim = await _db.Claims.FindAsync(id);
-        if (claim == null) return NotFound();
+        [HttpPost]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var claim = await _context.Claims.FindAsync(id);
+            if (claim == null) return NotFound();
 
-        claim.Status = ClaimStatus.Rejected;
-        // optionally store rejection reason somewhere (add column if required)
-        await _db.SaveChangesAsync();
-        TempData["Success"] = "Claim rejected";
-        return RedirectToAction(nameof(PendingClaims));
-    }
+            claim.Status = ClaimStatus.Approved;
+            await _context.SaveChangesAsync();
 
-    // optionally view claim details
-    [HttpGet]
-    public async Task<IActionResult> Details(int id)
-    {
-        var claim = await _db.Claims
-            .Include(c => c.SupportingDocuments)
-            .FirstOrDefaultAsync(c => c.Id == id);
+            return RedirectToAction("Dashboard");
+        }
 
-        if (claim == null) return NotFound();
-        return View(claim);
+        [HttpPost]
+        public async Task<IActionResult> Reject(int id)
+        {
+            var claim = await _context.Claims.FindAsync(id);
+            if (claim == null) return NotFound();
+
+            claim.Status = ClaimStatus.Rejected;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Dashboard");
+        }
     }
 }

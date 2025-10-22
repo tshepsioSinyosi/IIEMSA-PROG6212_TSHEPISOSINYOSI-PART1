@@ -1,38 +1,63 @@
-﻿@model IEnumerable<Claim>
+﻿@using ContractClaimSystem.Models
+@using AppClaim = ContractClaimSystem.Models.Claim
+@model List<AppClaim>
+
 <h2>Pending Claims</h2>
 
-<table>
-    <thead><tr><th>ID</th><th>Lecturer</th><th>Hours</th><th>Rate</th><th>Notes</th><th>Files</th><th>Actions</th></tr></thead>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Lecturer</th>
+            <th>Hours</th>
+            <th>Rate</th>
+            <th>Notes</th>
+            <th>Files</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
     <tbody>
-        @foreach (var c in Model)
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.ClaimId</td>
+                    <td>@c.Lecturer?.FullName ?? c.LecturerId</td>
+                    <td>@c.HoursWorked</td>
+                    <td>@c.HourlyRate.ToString("C")</td>
+                    <td>@c.AdditionalNotes</td>
+                    <td>
+                        @if (c.SupportingDocuments != null && c.SupportingDocuments.Any())
+                        {
+                            foreach (var d in c.SupportingDocuments)
+                            {
+                                <a asp-controller="Claim" asp-action="DownloadDoc" asp-route-id="@d.Id">@d.FileName</a>
+                                <br />
+                            }
+                        }
+                        else
+                        {
+                            <span>No files</span>
+                        }
+                    </td>
+                    <td>
+                        <form asp-controller="Verification" asp-action="ApproveClaim" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@c.ClaimId" />
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                        <form asp-controller="Verification" asp-action="RejectClaim" method="post" style="display:inline; margin-left:5px;">
+                            <input type="hidden" name="id" value="@c.ClaimId" />
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
         {
             <tr>
-                <td>@c.Id</td>
-                <td>@c.LecturerId</td> <!-- for better UI, join with Users to display full name -->
-                <td>@c.HoursWorked</td>
-                <td>@c.HourlyRate</td>
-                <td>@c.Notes</td>
-                <td>
-                    @if (c.SupportingDocuments != null)
-                    {
-                        foreach (var d in c.SupportingDocuments)
-                        {
-                            <a asp-controller="Claim" asp-action="DownloadDoc" asp-route-id="@d.Id">@d.FileName</a>
-                
-                            <br />
-                        }
-                    }
-                </td>
-                <td>
-                    <form asp-controller="Verification" asp-action="ApproveClaim" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@c.Id" />
-                        <button type="submit">Approve</button>
-                    </form>
-                    <form asp-controller="Verification" asp-action="RejectClaim" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@c.Id" />
-                        <button type="submit">Reject</button>
-                    </form>
-                </td>
+                <td colspan="7" class="text-center text-muted">No pending claims found.</td>
             </tr>
         }
     </tbody>

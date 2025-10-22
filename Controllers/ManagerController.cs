@@ -1,39 +1,52 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using ContractMonthlyClaimsSystem.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using ContractClaimSystem.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 
-namespace ContractClaimSystem.Controllers
+namespace ContractMonthlyClaimsSystem.Controllers
 {
-    // Authorize Manager to access the dashboard
-    [Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Coordinator, Manager")]
     public class ManagerController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<User> _userManager;
 
-        public ManagerController(ApplicationDbContext context, UserManager<User> userManager)
+        public ManagerController(ApplicationDbContext context)
         {
             _context = context;
-            _userManager = userManager;
         }
 
-        // GET: /Manager/Dashboard
-        // Shows all claims currently awaiting Manager approval (Pending status)
         public async Task<IActionResult> Dashboard()
         {
-            // Fetch all claims that are currently marked as "Pending"
-            // We include the Lecturer (User) data so we can display their name in the view
-            var pendingClaims = _context.Claims
-    .Where(c => c.Status == ClaimStatus.Pending)
-    .ToList();
-
+            var pendingClaims = await _context.Claims
+                .Include(c => c.Lecturer)
+                .Where(c => c.Status == ClaimStatus.Pending)
+                .ToListAsync();
 
             return View(pendingClaims);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var claim = await _context.Claims.FindAsync(id);
+            if (claim == null) return NotFound();
+
+            claim.Status = ClaimStatus.Approved;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Dashboard");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Reject(int id)
+        {
+            var claim = await _context.Claims.FindAsync(id);
+            if (claim == null) return NotFound();
+
+            claim.Status = ClaimStatus.Rejected;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Dashboard");
         }
     }
 }

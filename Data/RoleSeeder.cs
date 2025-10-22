@@ -1,5 +1,6 @@
-﻿// Data/RoleSeeder.cs
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
+using System.Threading.Tasks;
 
 public static class RoleSeeder
 {

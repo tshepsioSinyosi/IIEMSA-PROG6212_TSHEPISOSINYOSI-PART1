@@ -1,19 +1,18 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace ContractMonthlyClaimsSystem.Models
+namespace ContractClaimSystem.Models
 {
     public class User : IdentityUser
     {
         [Required]
         [MaxLength(100)]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
 
-        // Example roles: "Lecturer", "Coordinator", "Manager"
         [MaxLength(50)]
-        public string Role { get; set; }
+        public string Role { get; set; } = string.Empty;
 
-        // Optional navigation property if you want to list claims submitted by the lecturer
-        public virtual ICollection<Claim> Claims { get; set; }
+        public virtual ICollection<Claim> Claims { get; set; } = new List<Claim>();
     }
 }

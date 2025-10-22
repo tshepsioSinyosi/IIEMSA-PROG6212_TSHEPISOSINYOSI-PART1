@@ -1,25 +1,21 @@
-﻿// Models/SupportingDocument.cs
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-public class SupportingDocument
+namespace ContractClaimSystem.Models
 {
-    [Key]
-    public int Id { get; set; }
+    public class SupportingDocument
+    {
+        [Key]
+        public int Id { get; set; }
 
-    [Required]
-    public int ClaimId { get; set; } // FK
+        public string FileName { get; set; } = string.Empty;
 
-    [Required]
-    public string FileName { get; set; } // original filename
+        // Add this property
+        public string FilePath { get; set; } = string.Empty;
 
-    [Required]
-    public string StoredFileName { get; set; } // GUID name on disk
+        [ForeignKey("Claim")]
+        public int ClaimId { get; set; }
 
-    [Required]
-    public string FilePath { get; set; } // absolute or relative path
-
-    public DateTime UploadDate { get; set; } = DateTime.UtcNow;
-
-    // Navigation
-    public Claim Claim { get; set; }
+        public virtual Claim Claim { get; set; } = null!;
+    }
 }

@@ -1,4 +1,6 @@
-﻿@{
+﻿@model ContractClaimSystem.Models.LoginViewModel
+
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Login";
 }
@@ -6,19 +8,23 @@
 <div class="row justify-content-center mt-5">
     <div class="col-md-4">
         <h2 class="text-center mb-4" style="color:#007ACC;">Login</h2>
-        <form>
+
+        <form asp-action="Login" method="post">
             <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" placeholder="Enter email" />
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" placeholder="Enter email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" placeholder="Enter password" />
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" placeholder="Enter password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
             </div>
-
-            <!-- Colored login button -->
-            <a href="/Lecturer/Dashboard" class="btn btn-gradient w-100">Login</a>
-
+            <div class="mb-3 form-check">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label"></label>
+            </div>
+            <button type="submit" class="btn btn-gradient w-100">Login</button>
         </form>
     </div>
 </div>
@@ -38,3 +44,10 @@
             color: white;
         }
 </style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        console.log("Login page loaded");
+    </script>
+}

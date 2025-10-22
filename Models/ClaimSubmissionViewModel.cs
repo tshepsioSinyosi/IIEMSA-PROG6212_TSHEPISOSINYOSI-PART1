@@ -1,24 +1,21 @@
-﻿// Models/ClaimSubmissionViewModel.cs
-using Microsoft.AspNetCore.Http;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
-
-namespace ContractMonthlyClaimsSystem.Models  // ✅ Must match exactly
+namespace ContractClaimSystem.Models
 {
     public class ClaimSubmissionViewModel
     {
         [Required]
-        [Range(0.1, 1000, ErrorMessage = "Hours must be positive")]
-        public double HoursWorked { get; set; }
+        public decimal HoursWorked { get; set; }
 
         [Required]
-        [Range(0.01, 10000, ErrorMessage = "Hourly rate must be positive")]
         public decimal HourlyRate { get; set; }
 
-        public string Notes { get; set; }
+        [Required]
+        [MaxLength(500)]
+        public string Notes { get; set; } = string.Empty;
 
-        // Allow multiple supporting documents if you want
-        [Display(Name = "Supporting Document")]
-        public List<IFormFile> SupportingFiles { get; set; }
+        public List<IFormFile>? SupportingFiles { get; set; }
     }
 }

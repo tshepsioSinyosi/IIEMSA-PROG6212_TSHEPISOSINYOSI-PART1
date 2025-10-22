@@ -1,4 +1,4 @@
-﻿@using ContractMonthlyClaimsSystem.Models
+﻿@using ContractClaimSystem.Models
 @model List<Claim>
 
 @{
@@ -6,12 +6,12 @@
 }
 
 <div class="container py-5">
-    <h1 class="text-primary-emphasis mb-4">Claims Awaiting Review (@(Model?.Count() ?? 0))</h1>
+    <h2 class="mb-4 text-primary">Claims Awaiting Review (@Model?.Count() ?? 0)</h2>
 
     @if (Model == null || !Model.Any())
     {
-        <div class="alert alert-success text-center mt-5" role="alert">
-            <i class="fas fa-check-circle me-2"></i> All clear! There are currently no claims awaiting your review.
+        <div class="alert alert-success text-center mt-5">
+            <i class="fas fa-check-circle me-2"></i> All clear! No pending claims at the moment.
         </div>
     }
     else
@@ -25,6 +25,8 @@
                                 <th>Claim ID</th>
                                 <th>Lecturer</th>
                                 <th>Date Submitted</th>
+                                <th>Hours</th>
+                                <th>Rate</th>
                                 <th>Total Amount</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -35,30 +37,33 @@
                             {
                                 <tr>
                                     <td>@claim.ClaimId</td>
-                                    <td>@claim.Lecturer.FullName</td>
+                                    <td>@claim.Lecturer?.FullName</td>
                                     <td>@claim.SubmissionDate.ToShortDateString()</td>
-                                    <td>@(claim.HoursWorked* claim.HourlyRate).ToString("C")</td>
+                                    <td>@claim.HoursWorked</td>
+                                    <td>@claim.HourlyRate.ToString("C")</td>
+                                    <td>@((decimal)claim.HoursWorked * claim.HourlyRate).ToString("C")</td>
                                     <td>
-                                        <span class="badge bg-warning text-dark fw-bold">@claim.Status</span>
+                                        @switch (claim.Status)
+                                        {
+                                            case ClaimStatus.Approved:
+                                                <span class="badge bg-success fw-bold">APPROVED</span>
+                                                break;
+                                            case ClaimStatus.Rejected:
+                                                <span class="badge bg-danger fw-bold">REJECTED</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-warning text-dark fw-bold">PENDING</span>
+                                                break;
+                                        }
                                     </td>
                                     <td>
-                                        <!-- View Details Button -->
-                                        <a asp-controller="Claim" asp-action="Details" asp-route-id="@claim.ClaimId" class="btn btn-sm btn-info text-white me-2" title="Review Details and Documents">
-                                            <i class="fas fa-search"></i> Review
-                                        </a>
-
-                                        <!-- Approve Button (POST action to ClaimController) -->
-                                        <form asp-controller="Claim" asp-action="Approve" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to APPROVE Claim ID @claim.ClaimId?');">
-                                            <input type="hidden" name="id" value="@claim.ClaimId" />
-                                            <button type="submit" class="btn btn-sm btn-success" title="Approve Claim">
+                                        <form asp-action="Approve" method="post" asp-route-id="@claim.ClaimId" style="display:inline;" onsubmit="return confirm('Approve Claim ID @claim.ClaimId?');">
+                                            <button class="btn btn-success btn-sm">
                                                 <i class="fas fa-check"></i> Approve
                                             </button>
                                         </form>
-
-                                        <!-- Reject Button (POST action to ClaimController) -->
-                                        <form asp-controller="Claim" asp-action="Reject" method="post" style="display:inline; margin-left: 5px;" onsubmit="return confirm('Are you sure you want to REJECT Claim ID @claim.ClaimId?');">
-                                            <input type="hidden" name="id" value="@claim.ClaimId" />
-                                            <button type="submit" class="btn btn-sm btn-danger" title="Reject Claim">
+                                        <form asp-action="Reject" method="post" asp-route-id="@claim.ClaimId" style="display:inline; margin-left:5px;" onsubmit="return confirm('Reject Claim ID @claim.ClaimId?');">
+                                            <button class="btn btn-danger btn-sm">
                                                 <i class="fas fa-times"></i> Reject
                                             </button>
                                         </form>
@@ -72,3 +77,9 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        console.log("Coordinator Dashboard loaded");
+    </script>
+}

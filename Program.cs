@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using ContractMonthlyClaimsSystem.Models;
+using ContractClaimSystem.Models;
 using ContractClaimSystem.Data;
 
 namespace ContractClaimSystem
@@ -37,13 +37,12 @@ namespace ContractClaimSystem
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            // 4. Other services
             builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
-            // 5. Seed initial roles and data
+            // 4. Seed initial roles and data
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -52,7 +51,6 @@ namespace ContractClaimSystem
                 try
                 {
                     await SeedData.InitializeAsync(services);
-                    await RoleSeeder.SeedRolesAsync(services);
                     logger.LogInformation("Database seeded successfully.");
                 }
                 catch (Exception ex)
@@ -61,7 +59,7 @@ namespace ContractClaimSystem
                 }
             }
 
-            // 6. Middleware
+            // 5. Middleware
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");

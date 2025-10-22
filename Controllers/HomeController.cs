@@ -1,4 +1,4 @@
-using ContractMonthlyClaimsSystem.Models;
+using ContractClaimSystem.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using ContractClaimSystem.Data;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authentication; // Added this using directive, although SignInManager is usually sufficient
 
 namespace ContractClaimSystem.Controllers
 {
@@ -15,14 +14,17 @@ namespace ContractClaimSystem.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager; // Added SignInManager
+        private readonly SignInManager<User> _signInManager;
         private readonly ApplicationDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger, UserManager<User> userManager, SignInManager<User> signInManager, ApplicationDbContext context) // Inject SignInManager
+        public HomeController(ILogger<HomeController> logger,
+                              UserManager<User> userManager,
+                              SignInManager<User> signInManager,
+                              ApplicationDbContext context)
         {
             _logger = logger;
             _userManager = userManager;
-            _signInManager = signInManager; // Initialize SignInManager
+            _signInManager = signInManager;
             _context = context;
         }
 
@@ -34,69 +36,64 @@ namespace ContractClaimSystem.Controllers
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
-                    // FIX: Use _signInManager.SignOutAsync() instead of _userManager.SignOutAsync()
                     await _signInManager.SignOutAsync();
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Check for Coordinator role first (highest priority)
+                // Redirect based on role
                 if (await _userManager.IsInRoleAsync(user, "Coordinator"))
-                {
-                    _logger.LogInformation($"User {user.Email} assigned Identity Roles: Coordinator");
                     return RedirectToAction("CoordinatorDashboard");
-                }
-                // Check for Manager role
-                else if (await _userManager.IsInRoleAsync(user, "Manager"))
-                {
-                    _logger.LogInformation($"User {user.Email} assigned Identity Roles: Manager");
+                if (await _userManager.IsInRoleAsync(user, "Manager"))
                     return RedirectToAction("ManagerDashboard");
-                }
-                // Default to Lecturer dashboard
-                else if (await _userManager.IsInRoleAsync(user, "Lecturer"))
-                {
-                    _logger.LogInformation($"User {user.Email} assigned Identity Roles: Lecturer");
+                if (await _userManager.IsInRoleAsync(user, "Lecturer"))
                     return RedirectToAction("LecturerDashboard");
-                }
             }
 
-            // Fallback for unauthenticated users
             return RedirectToAction("Login", "Account");
         }
 
+        // Lecturer Dashboard: shows their own claims
         [Authorize(Roles = "Lecturer")]
         public async Task<IActionResult> LecturerDashboard()
         {
-            // Get the ID of the currently logged-in Lecturer
             var lecturerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (lecturerId == null) return Unauthorized();
 
-            if (lecturerId == null)
-            {
-                // Should not happen, but safe check
-                return Unauthorized();
-            }
-
-            // Fetch all claims associated with this Lecturer, ordered by submission date
             var claims = await _context.Claims
+                .Include(c => c.Lecturer)
+                .Include(c => c.SupportingDocuments)
                 .Where(c => c.LecturerId == lecturerId)
                 .OrderByDescending(c => c.SubmissionDate)
                 .ToListAsync();
 
-            // Pass the list of claims to the view for display
             return View(claims);
         }
 
+        // Coordinator Dashboard: shows all pending claims for approval
         [Authorize(Roles = "Coordinator")]
-        public IActionResult CoordinatorDashboard()
+        public async Task<IActionResult> CoordinatorDashboard()
         {
-            // This view will be updated in the next step to show claims for approval
-            return View();
+            var pendingClaims = await _context.Claims
+                .Include(c => c.Lecturer)
+                .Include(c => c.SupportingDocuments)
+                .Where(c => c.Status == ClaimStatus.Pending)
+                .OrderBy(c => c.SubmissionDate)
+                .ToListAsync();
+
+            return View(pendingClaims);
         }
 
+        // Manager Dashboard: shows all claims (can add filters for summary later)
         [Authorize(Roles = "Manager")]
-        public IActionResult ManagerDashboard()
+        public async Task<IActionResult> ManagerDashboard()
         {
-            // This view will be updated later for global overview
-            return View();
+            var allClaims = await _context.Claims
+                .Include(c => c.Lecturer)
+                .Include(c => c.SupportingDocuments)
+                .OrderByDescending(c => c.SubmissionDate)
+                .ToListAsync();
+
+            return View(allClaims);
         }
 
         public IActionResult Privacy()

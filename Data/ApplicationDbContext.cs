@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace ContractMonthlyClaimsSystem.Models
+namespace ContractClaimSystem.Models
 {
     public class ApplicationDbContext : IdentityDbContext<User>
     {

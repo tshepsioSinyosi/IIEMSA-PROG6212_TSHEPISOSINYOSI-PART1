@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ContractMonthlyClaimsSystem.Models
+namespace ContractClaimSystem.Models
 {
     public class LoginViewModel
     {
