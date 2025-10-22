@@ -20,3 +20,9 @@ CMCS is a web-based application designed to manage lecturers' monthly claims. Th
    ```bash
    git clone https://github.com/tshepsioSinyosi/IIEMSA-PROG6212_TSHEPISOSINYOSI-PART1.git
 here is a visual representation of the lecturer dashboard <img width="900" height="381" alt="image" src="https://github.com/user-attachments/assets/b033edb3-0f57-4669-aaa1-bc31c4228a40" />
+PART2
+CTREDENTIALS FOR LOGIN 
+Role	Email	Password	Expected Redirect
+Coordinator	coord1@claims.com	Coord@123	CoordinatorDashboard
+Lecturer	lecturer1@claims.com	Lect@123	LecturerDashboard
+Manager	manager@claims.com	Manager@123	ManagerDashboard
