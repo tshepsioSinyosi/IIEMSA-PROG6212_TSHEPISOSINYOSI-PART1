@@ -1,0 +1,51 @@
+﻿@model ContractClaimSystem.Models.Claim
+
+@{
+    ViewData["Title"] = "Claim Details";
+}
+
+<div class="container py-5">
+    <h2 class="mb-4">Claim Details (ID: @Model.ClaimId)</h2>
+
+    <dl class="row">
+        <dt class="col-sm-3">Lecturer</dt>
+        <dd class="col-sm-9">@Model.Lecturer?.FullName</dd>
+
+        <dt class="col-sm-3">Submission Date</dt>
+        <dd class="col-sm-9">@Model.SubmissionDate.ToString("dd/MM/yyyy")</dd>
+
+        <dt class="col-sm-3">Hours Worked</dt>
+        <dd class="col-sm-9">@Model.HoursWorked</dd>
+
+        <dt class="col-sm-3">Hourly Rate</dt>
+        <dd class="col-sm-9">@Model.HourlyRate.ToString("C")</dd>
+
+        <dt class="col-sm-3">Total Amount</dt>
+        <dd class="col-sm-9">@((Model.HoursWorked * Model.HourlyRate).ToString("C"))</dd>
+
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">@Model.Status</dd>
+
+        <dt class="col-sm-3">Notes</dt>
+        <dd class="col-sm-9">@Model.AdditionalNotes</dd>
+
+        <dt class="col-sm-3">Supporting Documents</dt>
+        <dd class="col-sm-9">
+            @if (Model.SupportingDocuments != null && Model.SupportingDocuments.Any())
+            {
+                <ul>
+                    @foreach (var doc in Model.SupportingDocuments)
+                    {
+                        <li><a href="@doc.FilePath" target="_blank">@doc.FileName</a></li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <span>No supporting documents uploaded.</span>
+            }
+        </dd>
+    </dl>
+
+    <a asp-action="MyClaims" class="btn btn-secondary">Back to My Claims</a>
+</div>

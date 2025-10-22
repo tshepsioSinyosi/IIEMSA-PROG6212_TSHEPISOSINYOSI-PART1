@@ -57,12 +57,12 @@
                                         }
                                     </td>
                                     <td>
-                                        <form asp-action="Approve" method="post" asp-route-id="@claim.ClaimId" style="display:inline;" onsubmit="return confirm('Approve Claim ID @claim.ClaimId?');">
+                                        <form asp-controller="Claim" asp-action="Approve" method="post" asp-route-id="@claim.ClaimId" style="display:inline;" onsubmit="return confirm('Approve Claim ID @claim.ClaimId?');">
                                             <button class="btn btn-success btn-sm">
                                                 <i class="fas fa-check"></i> Approve
                                             </button>
                                         </form>
-                                        <form asp-action="Reject" method="post" asp-route-id="@claim.ClaimId" style="display:inline; margin-left:5px;" onsubmit="return confirm('Reject Claim ID @claim.ClaimId?');">
+                                        <form asp-controller="Claim" asp-action="Reject" method="post" asp-route-id="@claim.ClaimId" style="display:inline; margin-left:5px;" onsubmit="return confirm('Reject Claim ID @claim.ClaimId?');">
                                             <button class="btn btn-danger btn-sm">
                                                 <i class="fas fa-times"></i> Reject
                                             </button>
