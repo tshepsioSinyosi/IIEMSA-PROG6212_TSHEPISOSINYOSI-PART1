@@ -65,8 +65,8 @@ namespace ContractClaimSystem.Controllers
                 .Where(c => c.LecturerId == lecturerId)
                 .OrderByDescending(c => c.SubmissionDate)
                 .ToListAsync();
-
-            return View(claims);
+            return View("~/Views/Lecturer/DashBoard.cshtml", claims);
+           
         }
 
         // Coordinator Dashboard: shows all pending claims for approval
@@ -80,7 +80,7 @@ namespace ContractClaimSystem.Controllers
                 .OrderBy(c => c.SubmissionDate)
                 .ToListAsync();
 
-            return View(pendingClaims);
+            return View("~/Views/Coordinator/DashBoard.cshtml", pendingClaims);
         }
 
         // Manager Dashboard: shows all claims (can add filters for summary later)
@@ -93,7 +93,7 @@ namespace ContractClaimSystem.Controllers
                 .OrderByDescending(c => c.SubmissionDate)
                 .ToListAsync();
 
-            return View(allClaims);
+            return View("~/Views/Manager/DashBoard.cshtml", allClaims);
         }
 
         public IActionResult Privacy()

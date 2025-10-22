@@ -34,13 +34,15 @@
     </div>
 
     <div class="form-group mb-4">
-        <label class="form-label fw-bold">Supporting Documents (optional)</label>
+        <label class="form-label fw-bold" for="fileInput">Supporting Documents (optional)</label>
         <input type="file" name="SupportingFiles" id="fileInput" multiple class="form-control" accept=".pdf,.docx,.xlsx" />
         <small class="form-text text-muted">
             Allowed: PDF, DOCX, XLSX — max 5 MB each.
         </small>
 
-        <div id="fileList" class="mt-2"></div>
+        <!-- File name display -->
+        <div id="fileList" class="mt-2 text-muted"></div>
+        <!-- Error messages -->
         <div id="fileError" class="text-danger mt-1"></div>
     </div>
 
@@ -71,6 +73,7 @@
                 if (!allowedExtensions.includes(ext)) {
                     errorDiv.textContent = `❌ File "${file.name}" is not allowed. Only PDF, DOCX, XLSX are permitted.`;
                     e.target.value = ''; // reset file input
+                    fileList.innerHTML = '';
                     return;
                 }
 
@@ -78,13 +81,14 @@
                 if (file.size > maxFileSize) {
                     errorDiv.textContent = `❌ File "${file.name}" exceeds 5 MB limit.`;
                     e.target.value = '';
+                    fileList.innerHTML = '';
                     return;
                 }
 
                 // Display file name
-                const listItem = document.createElement('div');
-                listItem.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-                fileList.appendChild(listItem);
+                const p = document.createElement('p');
+                p.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileList.appendChild(p);
             }
         });
     </script>

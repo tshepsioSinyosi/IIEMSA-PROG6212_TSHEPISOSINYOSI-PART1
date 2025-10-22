@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ContractClaimSystem.Models;
 using System.Security.Claims;
+using AppClaim = ContractClaimSystem.Models.Claim; // Alias for your model
 
 namespace ContractClaimSystem.Controllers
 {
@@ -10,12 +11,12 @@ namespace ContractClaimSystem.Controllers
     public class ClaimController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _environment;
+        private readonly IFileStorageService _fileStorageService;
 
-        public ClaimController(ApplicationDbContext context, IWebHostEnvironment environment)
+        public ClaimController(ApplicationDbContext context, IFileStorageService fileStorageService)
         {
             _context = context;
-            _environment = environment;
+            _fileStorageService = fileStorageService;
         }
 
         // ===========================
@@ -37,7 +38,7 @@ namespace ContractClaimSystem.Controllers
                 return View(model);
 
             // ✅ Create Claim object
-            var claim = new Models.Claim
+            var claim = new AppClaim
             {
                 LecturerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                 HoursWorked = model.HoursWorked,
@@ -51,54 +52,29 @@ namespace ContractClaimSystem.Controllers
             await _context.SaveChangesAsync();
 
             // ================================
-            // ✅ Handle File Upload (Validated)
+            // ✅ Handle File Upload via IFileStorageService
             // ================================
             if (model.SupportingFiles != null && model.SupportingFiles.Count > 0)
             {
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                var allowedExtensions = new[] { ".pdf", ".docx", ".xlsx" };
-                var maxSize = 5 * 1024 * 1024; // 5 MB
-
                 foreach (var file in model.SupportingFiles)
                 {
-                    if (file.Length <= 0) continue;
-
-                    var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-
-                    // ❌ Reject invalid extension
-                    if (!allowedExtensions.Contains(ext))
+                    if (file.Length > 0)
                     {
-                        TempData["ErrorMessage"] = $"File '{file.FileName}' is not allowed. Only PDF, DOCX, and XLSX are accepted.";
-                        return View(model);
+                        // Save file via storage service (local or blob)
+                        var (storedFileName, filePath) = await _fileStorageService.SaveFileAsync(file);
+
+                        // Save metadata to DB
+                        var doc = new SupportingDocument
+                        {
+                            ClaimId = claim.ClaimId,
+                            FileName = file.FileName,      // original file name
+                            FilePath = filePath,           // full path from service
+                            UploadDate = DateTime.UtcNow   // add upload date
+                        };
+
+                        _context.SupportingDocuments.Add(doc);
+
                     }
-
-                    // ❌ Reject large files
-                    if (file.Length > maxSize)
-                    {
-                        TempData["ErrorMessage"] = $"File '{file.FileName}' exceeds 5 MB limit.";
-                        return View(model);
-                    }
-
-                    // ✅ Save file
-                    var uniqueFileName = $"{Guid.NewGuid()}{ext}";
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-
-                    // ✅ Save document record in DB
-                    var doc = new SupportingDocument
-                    {
-                        ClaimId = claim.ClaimId,
-                        FileName = file.FileName, // original name
-                        FilePath = "/uploads/" + uniqueFileName // saved unique path
-                    };
-
-                    _context.SupportingDocuments.Add(doc);
                 }
                 await _context.SaveChangesAsync();
             }
@@ -202,7 +178,7 @@ namespace ContractClaimSystem.Controllers
         [HttpPost]
         [Authorize(Roles = "Lecturer")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Models.Claim updated)
+        public async Task<IActionResult> Edit(int id, AppClaim updated)
         {
             var claim = await _context.Claims.FindAsync(id);
             if (claim == null) return NotFound();
@@ -227,15 +203,11 @@ namespace ContractClaimSystem.Controllers
             var claim = await _context.Claims.FindAsync(id);
             if (claim == null) return NotFound();
 
-            // Delete supporting files from disk too
+            // Delete supporting files from storage
             var docs = _context.SupportingDocuments.Where(d => d.ClaimId == id).ToList();
             foreach (var doc in docs)
             {
-                var path = Path.Combine(_environment.WebRootPath, doc.FilePath.TrimStart('/'));
-                if (System.IO.File.Exists(path))
-                {
-                    System.IO.File.Delete(path);
-                }
+                await _fileStorageService.DeleteFileAsync(doc.FilePath);
             }
             _context.SupportingDocuments.RemoveRange(docs);
 

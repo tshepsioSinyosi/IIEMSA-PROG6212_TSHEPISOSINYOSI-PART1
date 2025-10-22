@@ -10,12 +10,14 @@ namespace ContractClaimSystem.Models
 
         public string FileName { get; set; } = string.Empty;
 
-        // Add this property
         public string FilePath { get; set; } = string.Empty;
 
         [ForeignKey("Claim")]
         public int ClaimId { get; set; }
 
         public virtual Claim Claim { get; set; } = null!;
+
+        // Add UploadDate property
+        public DateTime UploadDate { get; set; }
     }
 }
