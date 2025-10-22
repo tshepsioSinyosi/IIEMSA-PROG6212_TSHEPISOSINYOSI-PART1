@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ContractClaimSystem.Models;
 using System.Security.Claims;
-using AppClaim = ContractClaimSystem.Models.Claim; // Alias for your model
+using AppClaim = ContractClaimSystem.Models.Claim;
 
 namespace ContractClaimSystem.Controllers
 {
@@ -37,7 +37,7 @@ namespace ContractClaimSystem.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // ✅ Create Claim object
+            // Create Claim object
             var claim = new AppClaim
             {
                 LecturerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
@@ -45,35 +45,31 @@ namespace ContractClaimSystem.Controllers
                 HourlyRate = model.HourlyRate,
                 AdditionalNotes = model.Notes,
                 SubmissionDate = DateTime.Now,
-                Status = ClaimStatus.Pending
+                Status = ClaimStatus.Pending,
+                
             };
 
             _context.Claims.Add(claim);
             await _context.SaveChangesAsync();
 
-            // ================================
-            // ✅ Handle File Upload via IFileStorageService
-            // ================================
+            // Handle file uploads
             if (model.SupportingFiles != null && model.SupportingFiles.Count > 0)
             {
                 foreach (var file in model.SupportingFiles)
                 {
                     if (file.Length > 0)
                     {
-                        // Save file via storage service (local or blob)
                         var (storedFileName, filePath) = await _fileStorageService.SaveFileAsync(file);
 
-                        // Save metadata to DB
                         var doc = new SupportingDocument
                         {
                             ClaimId = claim.ClaimId,
-                            FileName = file.FileName,      // original file name
-                            FilePath = filePath,           // full path from service
-                            UploadDate = DateTime.UtcNow   // add upload date
+                            FileName = file.FileName,
+                            FilePath = filePath,
+                            UploadDate = DateTime.UtcNow
                         };
 
                         _context.SupportingDocuments.Add(doc);
-
                     }
                 }
                 await _context.SaveChangesAsync();
@@ -186,6 +182,7 @@ namespace ContractClaimSystem.Controllers
             claim.HoursWorked = updated.HoursWorked;
             claim.HourlyRate = updated.HourlyRate;
             claim.AdditionalNotes = updated.AdditionalNotes;
+            
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "✏️ Claim updated successfully!";
@@ -203,7 +200,6 @@ namespace ContractClaimSystem.Controllers
             var claim = await _context.Claims.FindAsync(id);
             if (claim == null) return NotFound();
 
-            // Delete supporting files from storage
             var docs = _context.SupportingDocuments.Where(d => d.ClaimId == id).ToList();
             foreach (var doc in docs)
             {

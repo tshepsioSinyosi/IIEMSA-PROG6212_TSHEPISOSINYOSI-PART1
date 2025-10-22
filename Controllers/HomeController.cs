@@ -100,5 +100,12 @@ namespace ContractClaimSystem.Controllers
         {
             return View();
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync(); // Sign out the user
+            return RedirectToAction("Login", "Account"); // Redirect to login page
+        }
     }
 }
