@@ -3,31 +3,89 @@
 @{
     ViewData["Title"] = "Submit Claim";
 }
-<h2>Submit Claim</h2>
 
-<form asp-action="Submit" method="post" enctype="multipart/form-data">
-    <div>
-        <label asp-for="HoursWorked"></label>
-        <input asp-for="HoursWorked" />
-        <span asp-validation-for="HoursWorked"></span>
+<h2 class="text-center mt-3">Submit a Claim</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success text-center">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger text-center">@TempData["ErrorMessage"]</div>
+}
+
+<form asp-action="Submit" method="post" enctype="multipart/form-data" class="container mt-4 p-4 border rounded shadow-sm bg-light">
+    <div class="form-group mb-3">
+        <label asp-for="HoursWorked" class="form-label fw-bold"></label>
+        <input asp-for="HoursWorked" class="form-control" placeholder="Enter total hours worked" />
+        <span asp-validation-for="HoursWorked" class="text-danger"></span>
     </div>
-    <div>
-        <label asp-for="HourlyRate"></label>
-        <input asp-for="HourlyRate" />
-        <span asp-validation-for="HourlyRate"></span>
+
+    <div class="form-group mb-3">
+        <label asp-for="HourlyRate" class="form-label fw-bold"></label>
+        <input asp-for="HourlyRate" class="form-control" placeholder="Enter hourly rate" />
+        <span asp-validation-for="HourlyRate" class="text-danger"></span>
     </div>
-    <div>
-        <label asp-for="Notes"></label>
-        <textarea asp-for="Notes"></textarea>
+
+    <div class="form-group mb-3">
+        <label asp-for="Notes" class="form-label fw-bold"></label>
+        <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Add any notes (optional)"></textarea>
     </div>
-    <div>
-        <label>Supporting Documents (optional)</label>
-        <input type="file" name="SupportingFiles" multiple />
-        <small>Allowed: pdf, png, jpg, jpeg, docx. Max 5MB each.</small>
+
+    <div class="form-group mb-4">
+        <label class="form-label fw-bold">Supporting Documents (optional)</label>
+        <input type="file" name="SupportingFiles" id="fileInput" multiple class="form-control" accept=".pdf,.docx,.xlsx" />
+        <small class="form-text text-muted">
+            Allowed: PDF, DOCX, XLSX — max 5 MB each.
+        </small>
+
+        <div id="fileList" class="mt-2"></div>
+        <div id="fileError" class="text-danger mt-1"></div>
     </div>
-    <button type="submit">Submit Claim</button>
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary btn-lg px-4">Submit Claim</button>
+        <a asp-action="MyClaims" class="btn btn-secondary btn-lg px-4 ms-3">My Claims</a>
+    </div>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const allowedExtensions = ['pdf', 'docx', 'xlsx'];
+        const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            const files = e.target.files;
+            const fileList = document.getElementById('fileList');
+            const errorDiv = document.getElementById('fileError');
+            fileList.innerHTML = '';
+            errorDiv.textContent = '';
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const ext = file.name.split('.').pop().toLowerCase();
+
+                // Validate file extension
+                if (!allowedExtensions.includes(ext)) {
+                    errorDiv.textContent = `❌ File "${file.name}" is not allowed. Only PDF, DOCX, XLSX are permitted.`;
+                    e.target.value = ''; // reset file input
+                    return;
+                }
+
+                // Validate file size
+                if (file.size > maxFileSize) {
+                    errorDiv.textContent = `❌ File "${file.name}" exceeds 5 MB limit.`;
+                    e.target.value = '';
+                    return;
+                }
+
+                // Display file name
+                const listItem = document.createElement('div');
+                listItem.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileList.appendChild(listItem);
+            }
+        });
+    </script>
 }
