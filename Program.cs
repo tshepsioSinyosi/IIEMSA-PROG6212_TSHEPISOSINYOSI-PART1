@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using ContractClaimSystem.Models;
 using ContractClaimSystem.Data;
+
 
 namespace ContractClaimSystem
 {
@@ -16,12 +16,20 @@ namespace ContractClaimSystem
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                                    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            // 2. Register DbContext (MySQL)
+         
+            // New Code (MS SQL Server)
+            // 2. Register DbContext (MS SQL Server)
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseMySql(
+                options.UseSqlServer( // <--- CHANGED TO UseSqlServer
                     connectionString,
-                    ServerVersion.AutoDetect(connectionString),
-                    mySqlOptions => mySqlOptions.EnableRetryOnFailure()
+                    sqlOptions =>
+                    {
+                        // This is optional, but highly recommended for EF Core Migrations
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 10,
+                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            errorNumbersToAdd: null);
+                    }
                 ));
 
             // 3. Identity configuration

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Reflection.Emit;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,9 @@ namespace ContractClaimSystem.Models
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+           
 
+          
             // Rename tables to match existing database
             builder.Entity<User>().ToTable("Users");
             builder.Entity<IdentityRole>().ToTable("AspNetRoles");
@@ -40,6 +43,12 @@ namespace ContractClaimSystem.Models
                 .WithOne(c => c.Lecturer)
                 .HasForeignKey(c => c.LecturerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Claim>(entity =>
+            {
+                entity.Property(c => c.HoursWorked).HasPrecision(18, 2);
+                entity.Property(c => c.HourlyRate).HasPrecision(18, 2);
+            });
         }
     }
 }

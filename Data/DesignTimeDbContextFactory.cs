@@ -22,10 +22,16 @@ namespace ContractClaimSystem.Data
                 throw new InvalidOperationException("Could not find connection string 'DefaultConnection' in appsettings.json.");
 
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
-                mysqlOptions => mysqlOptions.EnableRetryOnFailure());
+            optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 10,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null);
+            });
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }
+
     }
 }
