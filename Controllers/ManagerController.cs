@@ -15,15 +15,21 @@ namespace ContractMonthlyClaimsSystem.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard(string status)
         {
-            var pendingClaims = await _context.Claims
-                .Include(c => c.Lecturer)
-                .Where(c => c.Status == ClaimStatus.Pending)
-                .ToListAsync();
+            ViewBag.StatusFilter = status ?? "";
 
-            return View(pendingClaims);
+            var claimsQuery = _context.Claims.Include(c => c.Lecturer).AsQueryable();
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                claimsQuery = claimsQuery.Where(c => c.Status.ToString() == status);
+            }
+
+            var claims = await claimsQuery.ToListAsync();
+            return View(claims);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Approve(int id)

@@ -3,10 +3,28 @@
 
 @{
     ViewData["Title"] = "Coordinator Dashboard - Pending Claims";
+
+    // Example: Selected filter coming from ViewBag
+    var statusFilter = ViewBag.StatusFilter as string ?? "";
 }
 
 <div class="container py-5">
     <h2 class="mb-4 text-primary">Claims Awaiting Review (@Model?.Count() ?? 0)</h2>
+
+    <div class="mb-3">
+        <label for="statusFilter" class="form-label">Filter by Status:</label>
+        @{
+            string GetSelected(string value) => value == statusFilter ? "selected" : null;
+        }
+
+        <select id="statusFilter" class="form-select" onchange="location = this.value;">
+            <option value="@Url.Action("Dashboard", "Coordinator", new { status = "" })" selected="@GetSelected("")">All</option>
+            <option value="@Url.Action("Dashboard", "Coordinator", new { status = "Pending" })" selected="@GetSelected("Pending")">Pending</option>
+            <option value="@Url.Action("Dashboard", "Coordinator", new { status = "Approved" })" selected="@GetSelected("Approved")">Approved</option>
+            <option value="@Url.Action("Dashboard", "Coordinator", new { status = "Rejected" })" selected="@GetSelected("Rejected")">Rejected</option>
+        </select>
+
+    </div>
 
     @if (Model == null || !Model.Any())
     {

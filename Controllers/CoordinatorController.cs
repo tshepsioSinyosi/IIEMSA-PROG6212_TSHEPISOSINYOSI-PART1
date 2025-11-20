@@ -14,10 +14,19 @@ public class CoordinatorController : Controller
     }
 
     // Coordinator Dashboard
-    public IActionResult Dashboard()
+    // Coordinator Dashboard
+    public IActionResult Dashboard(string status)
     {
-        return View();
+        ViewBag.StatusFilter = status ?? "";
+
+        var claims = _context.Claims
+            .Where(c => string.IsNullOrEmpty(status) || c.Status.ToString() == status)
+            .ToList();
+
+        return View(claims);
     }
+
+
 
     // Review Claims
     public async Task<IActionResult> ReviewClaims(string statusFilter = "Pending")

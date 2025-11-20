@@ -2,16 +2,41 @@
 @model IEnumerable<Claim>
 
 @{
-    ViewData["Title"] = "Pending Claims Dashboard";
+    ViewData["Title"] = "Manager Dashboard - Pending Claims";
+
+    // Selected filter from ViewBag
+    var statusFilter = ViewBag.StatusFilter as string ?? "";
+
+    string GetSelected(string value) => value == statusFilter ? "selected" : null;
+
+    // Calculate totals
+    decimal totalHours = 0;
+    decimal totalAmount = 0;
+    foreach (var claim in Model)
+    {
+        totalHours += claim.HoursWorked;
+        totalAmount += claim.HoursWorked * claim.HourlyRate;
+    }
 }
 
 <div class="container py-5">
     <h2 class="mb-4 text-primary">Claims Awaiting Review (@Model?.Count() ?? 0)</h2>
 
+    <!-- Status Filter -->
+    <div class="mb-3">
+        <label for="statusFilter" class="form-label">Filter by Status:</label>
+        <select id="statusFilter" class="form-select" onchange="location = this.value;">
+            <option value="@Url.Action("Dashboard", "Manager", new { status = "" })" selected="@GetSelected("")">All</option>
+            <option value="@Url.Action("Dashboard", "Manager", new { status = "Pending" })" selected="@GetSelected("Pending")">Pending</option>
+            <option value="@Url.Action("Dashboard", "Manager", new { status = "Approved" })" selected="@GetSelected("Approved")">Approved</option>
+            <option value="@Url.Action("Dashboard", "Manager", new { status = "Rejected" })" selected="@GetSelected("Rejected")">Rejected</option>
+        </select>
+    </div>
+
     @if (Model == null || !Model.Any())
     {
         <div class="alert alert-success text-center mt-5">
-            <i class="fas fa-check-circle me-2"></i> All clear! No pending claims at the moment.
+            <i class="fas fa-check-circle me-2"></i> All clear! No claims found for this filter.
         </div>
     }
     else
@@ -41,7 +66,7 @@
                                     <td>@claim.SubmissionDate.ToShortDateString()</td>
                                     <td>@claim.HoursWorked</td>
                                     <td>@claim.HourlyRate.ToString("C")</td>
-                                    <td>@claim.TotalAmount.ToString("C")</td>
+                                    <td>@(claim.HoursWorked* claim.HourlyRate).ToString("C")</td>
                                     <td>
                                         @switch (claim.Status)
                                         {
@@ -58,14 +83,14 @@
                                     </td>
                                     <td>
                                         <!-- Approve Button -->
-                                        <form asp-controller="Claim" asp-action="Approve" method="post" asp-route-id="@claim.ClaimId" style="display:inline;" onsubmit="return confirm('Approve Claim ID @claim.ClaimId?');">
+                                        <form asp-controller="Manager" asp-action="Approve" method="post" asp-route-id="@claim.ClaimId" style="display:inline;" onsubmit="return confirm('Approve Claim ID @claim.ClaimId?');">
                                             <button class="btn btn-success btn-sm">
                                                 <i class="fas fa-check"></i> Approve
                                             </button>
                                         </form>
 
                                         <!-- Reject Button -->
-                                        <form asp-controller="Claim" asp-action="Reject" method="post" asp-route-id="@claim.ClaimId" style="display:inline; margin-left:5px;" onsubmit="return confirm('Reject Claim ID @claim.ClaimId?');">
+                                        <form asp-controller="Manager" asp-action="Reject" method="post" asp-route-id="@claim.ClaimId" style="display:inline; margin-left:5px;" onsubmit="return confirm('Reject Claim ID @claim.ClaimId?');">
                                             <button class="btn btn-danger btn-sm">
                                                 <i class="fas fa-times"></i> Reject
                                             </button>
@@ -74,9 +99,26 @@
                                 </tr>
                             }
                         </tbody>
+
+                        <!-- Totals Footer -->
+                        <tfoot>
+                            <tr class="table-secondary fw-bold">
+                                <td colspan="3">Grand Total</td>
+                                <td>@totalHours</td>
+                                <td></td>
+                                <td>@totalAmount.ToString("C")</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        console.log("Manager Dashboard loaded");
+    </script>
+}
