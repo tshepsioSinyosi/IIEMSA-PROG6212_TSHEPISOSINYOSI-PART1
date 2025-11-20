@@ -3,7 +3,7 @@
 
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Claim Status";
+    ViewData["Title"] = "Claim History";
 }
 
 <div class="container mt-5">
@@ -17,6 +17,15 @@
     }
     else
     {
+        // Group claims by month/year
+        var groupedClaims = Model
+        .GroupBy(c => new { c.SubmissionDate.Year, c.SubmissionDate.Month })
+        .OrderByDescending(g => g.Key.Year)
+        .ThenByDescending(g => g.Key.Month);
+
+        decimal grandTotalHours = 0;
+        decimal grandTotalAmount = 0;
+
         <table class="table table-hover text-center">
             <thead style="background: linear-gradient(45deg,#007ACC,#00CFFF); color:white;">
                 <tr>
@@ -27,27 +36,22 @@
                 </tr>
             </thead>
             <tbody>
-                @{
-                    // Group claims by month/year
-                    var groupedClaims = Model
-                    .GroupBy(c => new { c.SubmissionDate.Year, c.SubmissionDate.Month })
-                    .OrderByDescending(g => g.Key.Year).ThenByDescending(g => g.Key.Month);
+                @foreach (var group in groupedClaims)
+                {
+                    var monthName = new DateTime(group.Key.Year, group.Key.Month, 1).ToString("MMMM yyyy");
+                    var totalHours = group.Sum(c => c.HoursWorked);
+                    var totalAmount = group.Sum(c => c.HoursWorked * c.HourlyRate);
 
-                    foreach (var group in groupedClaims)
-                    {
-                        var monthName = new DateTime(group.Key.Year, group.Key.Month, 1).ToString("MMMM yyyy");
-                        var totalHours = group.Sum(c => c.HoursWorked);
-                        var totalAmount = group.Sum(c => c.HoursWorked * c.HourlyRate);
+                    ClaimStatus monthStatus;
+                    if (group.All(c => c.Status == ClaimStatus.Approved))
+                        monthStatus = ClaimStatus.Approved;
+                    else if (group.All(c => c.Status == ClaimStatus.Rejected))
+                        monthStatus = ClaimStatus.Rejected;
+                    else
+                        monthStatus = ClaimStatus.Pending;
 
-                        // Determine overall status for the month
-                        ClaimStatus monthStatus;
-                        if (group.All(c => c.Status == ClaimStatus.Approved))
-                            monthStatus = ClaimStatus.Approved;
-                        else if (group.All(c => c.Status == ClaimStatus.Rejected))
-                            monthStatus = ClaimStatus.Rejected;
-                        else
-                            monthStatus = ClaimStatus.Pending;
-                    }
+                    grandTotalHours += totalHours;
+                    grandTotalAmount += totalAmount;
                     <tr>
                         <td>@monthName</td>
                         <td>@totalHours</td>
@@ -56,19 +60,33 @@
                             @switch (monthStatus)
                             {
                                 case ClaimStatus.Approved:
-                                    <span class="badge bg-success fw-bold">Approved</span>
+                                    <text><span class="badge bg-success fw-bold">Approved</span></text>
                                     break;
                                 case ClaimStatus.Rejected:
-                                    <span class="badge bg-danger fw-bold">Rejected</span>
+                                    <text><span class="badge bg-danger fw-bold">Rejected</span></text>
                                     break;
                                 default:
-                                    <span class="badge bg-warning text-dark fw-bold">Pending</span>
+                                    <text><span class="badge bg-warning text-dark fw-bold">Pending</span></text>
                                     break;
                             }
                         </td>
                     </tr>
                 }
             </tbody>
+            <tfoot>
+                <tr class="table-secondary fw-bold">
+                    <td>Grand Total</td>
+                    <td>@grandTotalHours</td>
+                    <td>@grandTotalAmount.ToString("C")</td>
+                    <td>-</td>
+                </tr>
+            </tfoot>
         </table>
     }
 </div>
+
+@section Scripts {
+    <script>
+        console.log("Lecturer Claim History loaded");
+    </script>
+}
