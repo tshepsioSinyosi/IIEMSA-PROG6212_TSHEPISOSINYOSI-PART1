@@ -22,6 +22,29 @@
     }
     else
     {
+        <!-- Filters -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>Filter by Month:</label>
+                <select id="monthFilter" class="form-select">
+                    <option value="">All</option>
+                    @foreach (var month in Model.Select(c => c.SubmissionDate.ToString("MMMM yyyy")).Distinct())
+                    {
+                        <option value="@month">@month</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label>Filter by Status:</label>
+                <select id="statusFilter" class="form-select">
+                    <option value="">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+            </div>
+        </div>
+
         <div class="card shadow">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -39,7 +62,8 @@
                         <tbody>
                             @foreach (var claim in Model)
                             {
-                                <tr>
+                                var isLatePending = claim.Status == ClaimStatus.Pending && (DateTime.Now - claim.SubmissionDate).Days > 30;
+                                <tr class="@(isLatePending ? "table-danger" : "")">
                                     <td>@claim.ClaimId</td>
                                     <td>@claim.SubmissionDate.ToShortDateString()</td>
                                     <td>@claim.HoursWorked</td>
@@ -66,6 +90,16 @@
                                 </tr>
                             }
                         </tbody>
+
+                        <!-- Footer: Auto-sum totals -->
+                        <tfoot class="table-light fw-bold">
+                            <tr>
+                                <td colspan="2" class="text-end">Totals:</td>
+                                <td>@Model.Sum(c => c.HoursWorked)</td>
+                                <td>@Model.Sum(c => c.HoursWorked * c.HourlyRate).ToString("C")</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -76,5 +110,30 @@
 @section Scripts {
     <script>
         console.log("Lecturer Dashboard loaded");
+
+        // -------------------------------
+        // FILTERING LOGIC
+        // -------------------------------
+        const monthFilter = document.getElementById('monthFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const tableRows = document.querySelectorAll('table tbody tr');
+
+        function filterTable() {
+            const selectedMonth = monthFilter.value;
+            const selectedStatus = statusFilter.value;
+
+            tableRows.forEach(row => {
+                const rowMonth = row.cells[1].innerText; // Submission Date column
+                const rowStatus = row.cells[4].innerText.trim(); // Status column
+
+                const monthMatch = !selectedMonth || rowMonth.includes(selectedMonth);
+                const statusMatch = !selectedStatus || rowStatus === selectedStatus;
+
+                row.style.display = (monthMatch && statusMatch) ? '' : 'none';
+            });
+        }
+
+        monthFilter.addEventListener('change', filterTable);
+        statusFilter.addEventListener('change', filterTable);
     </script>
 }
