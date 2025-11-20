@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ContractClaimSystem.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -14,28 +13,28 @@ namespace ContractClaimSystem.Data
         public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>();
+            var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("SeedData");
 
-            // Apply migrations
-            await context.Database.MigrateAsync();
 
-            // Seed roles
+            // Seed all roles including Admin
             await SeedRolesAsync(roleManager, logger);
 
             // Seed users
-            await EnsureUserAndRoleAssignedAsync(userManager, logger, "Coordinator", "coord1@claims.com", "Coord@123", "Alice Coordinator");
-            await EnsureUserAndRoleAssignedAsync(userManager, logger, "Coordinator", "coord2@claims.com", "Coord@123", "Bob Coordinator");
+            await EnsureUserAndRoleAssignedAsync(userManager, logger, "Admin", "admin@admin.com", "Admin@123", "System Administrator");
+            await EnsureUserAndRoleAssignedAsync(userManager, logger, "Coordinator", "coord1@claims.com", "Coord@1234", "Alice Coordinator");
+            await EnsureUserAndRoleAssignedAsync(userManager, logger, "Coordinator", "coord2@claims.com", "Coord@12345", "Bob Coordinator");
             await EnsureUserAndRoleAssignedAsync(userManager, logger, "Lecturer", "lecturer1@claims.com", "Lect@123", "Carol Lecturer");
-            await EnsureUserAndRoleAssignedAsync(userManager, logger, "Lecturer", "lecturer2@claims.com", "Lect@123", "David Lecturer");
+            await EnsureUserAndRoleAssignedAsync(userManager, logger, "Lecturer", "lecturer2@claims.com", "Lect@1234", "David Lecturer");
             await EnsureUserAndRoleAssignedAsync(userManager, logger, "Manager", "manager@claims.com", "Manager@123", "Claims Manager");
         }
 
         private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager, ILogger logger)
         {
-            string[] roles = { "Coordinator", "Lecturer", "Manager" };
+            string[] roles = { "Admin", "Coordinator", "Lecturer", "Manager" };
+
             foreach (var roleName in roles)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))

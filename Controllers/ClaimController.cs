@@ -36,6 +36,19 @@ namespace ContractClaimSystem.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            bool alreadySubmitted = await _context.Claims
+                .AnyAsync(c => c.LecturerId == userId &&
+                               c.SubmissionDate.Date == DateTime.Now.Date);
+
+            if (alreadySubmitted)
+            {
+                ModelState.AddModelError("",
+                    "❌ You already submitted a claim today.");
+                return View(model);
+            }
+
 
             // Create Claim object
             var claim = new AppClaim
