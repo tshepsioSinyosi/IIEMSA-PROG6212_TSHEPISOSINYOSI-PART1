@@ -15,7 +15,8 @@ namespace ContractClaimSystem.Models
 
         public decimal HourlyRate { get; set; }
         [NotMapped]
-        public decimal TotalAmount => HoursWorked * HourlyRate;
+        public decimal TotalAmount { get; set; }
+
 
 
 

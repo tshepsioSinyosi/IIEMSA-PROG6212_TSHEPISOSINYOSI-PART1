@@ -16,16 +16,25 @@
 }
 
 <form asp-action="Submit" method="post" enctype="multipart/form-data" class="container mt-4 p-4 border rounded shadow-sm bg-light">
+
     <div class="form-group mb-3">
         <label asp-for="HoursWorked" class="form-label fw-bold"></label>
-        <input asp-for="HoursWorked" class="form-control" placeholder="Enter total hours worked" />
+        <input asp-for="HoursWorked" class="form-control" id="hoursInput" placeholder="Enter total hours worked" />
         <span asp-validation-for="HoursWorked" class="text-danger"></span>
     </div>
 
     <div class="form-group mb-3">
         <label asp-for="HourlyRate" class="form-label fw-bold"></label>
-        <input asp-for="HourlyRate" class="form-control" placeholder="Enter hourly rate" />
+        <input asp-for="HourlyRate" class="form-control" id="rateInput" placeholder="Enter hourly rate" />
         <span asp-validation-for="HourlyRate" class="text-danger"></span>
+    </div>
+
+    <!-- NEW: Auto-calculated total -->
+    <div class="form-group mb-3">
+        <label class="form-label fw-bold">Calculated Total Amount</label>
+        <input type="text" id="totalAmount" class="form-control bg-white" readonly
+               placeholder="Total will auto-calculate..." />
+        <small class="text-muted">This amount updates automatically.</small>
     </div>
 
     <div class="form-group mb-3">
@@ -40,23 +49,50 @@
             Allowed: PDF, DOCX, XLSX — max 5 MB each.
         </small>
 
-        <!-- File name display -->
         <div id="fileList" class="mt-2 text-muted"></div>
-        <!-- Error messages -->
         <div id="fileError" class="text-danger mt-1"></div>
     </div>
 
     <div class="text-center">
-        <button type="submit" class="btn btn-primary btn-lg px-4">Submit Claim</button>
+        <button type="submit" class="btn btn-primary btn-lg px-4" id="submitBtn">Submit Claim</button>
         <a asp-action="MyClaims" class="btn btn-secondary btn-lg px-4 ms-3">My Claims</a>
     </div>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
     <script>
+        // -------------------------------
+        // AUTO CALCULATION LOGIC
+        // -------------------------------
+        function calculateTotal() {
+            const hours = parseFloat(document.getElementById('hoursInput').value);
+            const rate = parseFloat(document.getElementById('rateInput').value);
+            const totalBox = document.getElementById('totalAmount');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (!isNaN(hours) && hours > 0 && !isNaN(rate) && rate > 0) {
+                const total = hours * rate;
+                totalBox.value = "R " + total.toFixed(2);
+                totalBox.classList.remove("is-invalid");
+                submitBtn.disabled = false;
+            } else {
+                totalBox.value = "";
+                totalBox.classList.add("is-invalid");
+                submitBtn.disabled = true;
+            }
+        }
+
+        document.getElementById('hoursInput').addEventListener('input', calculateTotal);
+        document.getElementById('rateInput').addEventListener('input', calculateTotal);
+
+
+        // -------------------------------
+        // FILE VALIDATION (your existing code)
+        // -------------------------------
         const allowedExtensions = ['pdf', 'docx', 'xlsx'];
-        const maxFileSize = 5 * 1024 * 1024; // 5MB
+        const maxFileSize = 5 * 1024 * 1024;
 
         document.getElementById('fileInput').addEventListener('change', function (e) {
             const files = e.target.files;
@@ -69,23 +105,18 @@
                 const file = files[i];
                 const ext = file.name.split('.').pop().toLowerCase();
 
-                // Validate file extension
                 if (!allowedExtensions.includes(ext)) {
-                    errorDiv.textContent = `❌ File "${file.name}" is not allowed. Only PDF, DOCX, XLSX are permitted.`;
-                    e.target.value = ''; // reset file input
-                    fileList.innerHTML = '';
+                    errorDiv.textContent = `❌ File "${file.name}" is not allowed.`;
+                    e.target.value = '';
                     return;
                 }
 
-                // Validate file size
                 if (file.size > maxFileSize) {
                     errorDiv.textContent = `❌ File "${file.name}" exceeds 5 MB limit.`;
                     e.target.value = '';
-                    fileList.innerHTML = '';
                     return;
                 }
 
-                // Display file name
                 const p = document.createElement('p');
                 p.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
                 fileList.appendChild(p);
