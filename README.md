@@ -94,7 +94,7 @@ Manager	manager@claims.com
 HR (NEW)	hruser@claims.com
 	Hr@123	HRDashboard
 
-PART 3 – Automation Enhancements (POE Requirements)
+7. PART 3 – Automation Enhancements (POE Requirements)
 
 These improvements elevate the system with automation, validation, and streamlined processing.
 
@@ -131,7 +131,7 @@ Highlights missing data or inconsistencies
 ✔ Automated logging of approval actions
 ✔ Dashboards update instantly after decisions
 
- HR Automation (NEW FEATURE)
+✨ HR Automation (NEW FEATURE)
 “Automation of claim processing and lecturer data management significantly streamlines administrative processes.”
 
 ✔ Automatic retrieval of all approved claims
@@ -150,15 +150,16 @@ Grand totals for payroll
 ✔ Eliminates manual payroll calculations
 
 8. Visual Representation
+   
+<img width="1912" height="1002" alt="image" src="https://github.com/user-attachments/assets/b2a2d944-d789-45c4-b4bf-28a75524f030" />
 
-(Your screenshot of the Lecturer Dashboard goes here.)
-
-9. Video Demonstration
+10. Video Demonstration
 
 YouTube Link:
 
+🔗 
 
-...Conclusion...
+10. Conclusion
 
 The Contract Monthly Claim System provides:
 
@@ -175,7 +176,3 @@ Reduced manual work for HR
 A secure, modern, and user-friendly digital claims platform
 
 The latest automation upgrades further enhance system performance and efficiency, aligning with the POE requirements by demonstrating automation across Lecturer, Coordinator/Manager, and HR views.
-
-
-
-
