@@ -1,1 +1,30 @@
-﻿
+﻿@model HRSummaryViewModel
+
+<h2>Approved Claims Summary</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Lecturer</th>
+            <th>Total Hours</th>
+            <th>Total Payment</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var summary in Model.LecturerSummaries)
+        {
+            <tr>
+                <td>@summary.LecturerName</td>
+                <td>@summary.TotalHours</td>
+                <td>@summary.TotalPayment.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr class="fw-bold">
+            <td>Grand Total</td>
+            <td>@Model.GrandTotalHours</td>
+            <td>@Model.GrandTotalPayment.ToString("C")</td>
+        </tr>
+    </tfoot>
+</table>
