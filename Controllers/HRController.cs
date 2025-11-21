@@ -64,20 +64,33 @@ namespace ContractClaimSystem.Controllers
             return RedirectToAction("Index");
         }
 
-        // Generate PDF/Excel report
-        public async Task<IActionResult> GenerateReport()
+        public async Task<IActionResult> SummaryReport()
         {
-            try
+            var approvedClaims = await _claimService.GetClaimsAsync(ClaimStatus.Approved);
+
+            var summary = approvedClaims
+                .GroupBy(c => c.LecturerId)
+                .Select(g => new HRClaimSummaryViewModel
+                {
+                    LecturerName = g.First().Lecturer.FullName,
+                    TotalHours = g.Sum(c => c.HoursWorked),
+                    TotalPayment = g.Sum(c => c.HoursWorked * c.HourlyRate)
+                })
+                .ToList();
+
+            var grandTotalHours = summary.Sum(s => s.TotalHours);
+            var grandTotalPayment = summary.Sum(s => s.TotalPayment);
+
+            var model = new HRSummaryViewModel
             {
-                var reportBytes = await _claimService.GenerateInvoiceReportAsync();
-                return File(reportBytes, "application/pdf", "ApprovedClaims.pdf");
-            }
-            catch
-            {
-                TempData["ErrorMessage"] = "Failed to generate report. Please try again.";
-                return RedirectToAction("Index");
-            }
+                LecturerSummaries = summary,
+                GrandTotalHours = grandTotalHours,
+                GrandTotalPayment = grandTotalPayment
+            };
+
+            return View(model);
         }
+
 
         // Update lecturer info
         [HttpPost]

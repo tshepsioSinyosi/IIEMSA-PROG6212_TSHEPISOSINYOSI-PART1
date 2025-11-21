@@ -23,7 +23,9 @@ namespace ContractClaimSystem.Data
             await SeedRolesAsync(roleManager, logger);
 
             // Seed users
-            await EnsureUserAndRoleAssignedAsync(userManager, logger, "Admin", "admin@admin.com", "Admin@123", "System Administrator");
+            //await EnsureUserAndRoleAssignedAsync(userManager, logger, "Admin", "admin@admin.com", "Admin@123", "System Administrator");
+            // HR User
+            await EnsureUserAndRoleAssignedAsync(userManager, logger, "HR", "hr@claims.com", "HR@1234", "HR Manager");
             await EnsureUserAndRoleAssignedAsync(userManager, logger, "Coordinator", "coord1@claims.com", "Coord@1234", "Alice Coordinator");
             await EnsureUserAndRoleAssignedAsync(userManager, logger, "Coordinator", "coord2@claims.com", "Coord@12345", "Bob Coordinator");
             await EnsureUserAndRoleAssignedAsync(userManager, logger, "Lecturer", "lecturer1@claims.com", "Lect@123", "Carol Lecturer");
@@ -33,7 +35,7 @@ namespace ContractClaimSystem.Data
 
         private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager, ILogger logger)
         {
-            string[] roles = { "Admin", "Coordinator", "Lecturer", "Manager" };
+            string[] roles = { "Admin", "Coordinator", "Lecturer", "Manager", "HR" };
 
             foreach (var roleName in roles)
             {
