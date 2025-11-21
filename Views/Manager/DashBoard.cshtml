@@ -60,7 +60,12 @@
                         <tbody>
                             @foreach (var claim in Model)
                             {
-                                <tr>
+                                // Flagging conditions
+                                var noDocuments = claim.SupportingDocuments == null || !claim.SupportingDocuments.Any();
+                                var outOfBounds = claim.HoursWorked < 5 || claim.HoursWorked > 160 || claim.HourlyRate < 100 || claim.HourlyRate > 500;
+                                var needsAttention = noDocuments || outOfBounds;
+
+                                <tr class="@(needsAttention ? "table-danger" : "")">
                                     <td>@claim.ClaimId</td>
                                     <td>@claim.Lecturer?.FullName</td>
                                     <td>@claim.SubmissionDate.ToShortDateString()</td>
@@ -82,14 +87,11 @@
                                         }
                                     </td>
                                     <td>
-                                        <!-- Approve Button -->
                                         <form asp-controller="Manager" asp-action="Approve" method="post" asp-route-id="@claim.ClaimId" style="display:inline;" onsubmit="return confirm('Approve Claim ID @claim.ClaimId?');">
                                             <button class="btn btn-success btn-sm">
                                                 <i class="fas fa-check"></i> Approve
                                             </button>
                                         </form>
-
-                                        <!-- Reject Button -->
                                         <form asp-controller="Manager" asp-action="Reject" method="post" asp-route-id="@claim.ClaimId" style="display:inline; margin-left:5px;" onsubmit="return confirm('Reject Claim ID @claim.ClaimId?');">
                                             <button class="btn btn-danger btn-sm">
                                                 <i class="fas fa-times"></i> Reject
