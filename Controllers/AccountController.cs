@@ -60,8 +60,11 @@ namespace ContractClaimSystem.Controllers
                         return RedirectToAction("LecturerDashboard", "Home");
                     else if (await _userManager.IsInRoleAsync(user, "Manager"))
                         return RedirectToAction("ManagerDashboard", "Home");
+                    else if (await _userManager.IsInRoleAsync(user, "HR"))
+                        return RedirectToAction("Index", "HR"); // HR dashboard
                     else
                         return LocalRedirect(returnUrl ?? Url.Action("Index", "Home"));
+
                 }
 
                 if (result.IsLockedOut)

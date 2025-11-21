@@ -1,0 +1,113 @@
+﻿@model ContractClaimSystem.Models.HRDashboardViewModel
+
+@{
+    ViewData["Title"] = "HR Dashboard";
+}
+
+<h2>HR Dashboard</h2>
+
+<!-- Success / Error Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<!-- Stats Panel -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card bg-success text-white p-3">
+            Total Approved Claims: @Model.TotalApprovedClaims
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white p-3">
+            Total Payment to Process: @Model.TotalPayment.ToString("C")
+        </div>
+    </div>
+</div>
+
+<!-- Button to view report -->
+<div class="mb-4">
+    <a asp-controller="HR" asp-action="SummaryReport" class="btn btn-primary">
+        <i class="fas fa-chart-bar me-2"></i> View Approved Claims Report
+    </a>
+</div>
+
+<hr />
+
+<!-- Pending Claims Table -->
+<h3>Pending Claims</h3>
+<form asp-action="ApproveClaims" method="post">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Claim ID</th>
+                <th>Lecturer ID</th>
+                <th>Hours Worked</th>
+                <th>Hourly Rate</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var claim in Model.Claims)
+            {
+                <tr>
+                    <td>
+                        @if (claim.Status != ContractClaimSystem.Models.ClaimStatus.Approved)
+                        {
+                            <input type="checkbox" name="claimIds" value="@claim.ClaimId" />
+                        }
+                    </td>
+                    <td>@claim.ClaimId</td>
+                    <td>@claim.LecturerId</td>
+                    <td>@claim.HoursWorked</td>
+                    <td>@claim.HourlyRate.ToString("C")</td>
+                    <td>@claim.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-success">Approve Selected</button>
+</form>
+
+<hr />
+
+<!-- Lecturer Management -->
+<h3>Lecturer Management</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Lecturer ID</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Update Info</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var lecturer in Model.Lecturers)
+        {
+            <tr>
+                <td>@lecturer.Id</td>
+                <td>@lecturer.Email</td>
+                <td>@lecturer.PhoneNumber</td>
+                <td>
+                    <form asp-action="UpdateLecturer" method="post" class="form-inline">
+                        <input type="hidden" name="userId" value="@lecturer.Id" />
+                        <input type="email" name="email" value="@lecturer.Email" class="form-control mr-1" />
+                        <input type="text" name="phone" value="@lecturer.PhoneNumber" class="form-control mr-1" />
+                        <button type="submit" class="btn btn-warning">Update</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

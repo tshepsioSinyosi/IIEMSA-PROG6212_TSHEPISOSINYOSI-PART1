@@ -21,8 +21,14 @@ namespace ContractClaimSystem.Controllers
             _lecturerService = lecturerService;
         }
 
+        // Landing page for HR - redirect to dashboard
+        public IActionResult Index()
+        {
+            return RedirectToAction("HRDashboard");
+        }
+
         // Main HR dashboard
-        public async Task<IActionResult> Index(string? status)
+        public async Task<IActionResult> HRDashboard(string? status)
         {
             ClaimStatus? parsedStatus = null;
 
@@ -44,7 +50,7 @@ namespace ContractClaimSystem.Controllers
                                      .Sum(c => c.HoursWorked * c.HourlyRate)
             };
 
-            return View(model);
+            return View(model); // Points to HRDashboard.cshtml
         }
 
         // Approve selected claims
@@ -61,20 +67,27 @@ namespace ContractClaimSystem.Controllers
                 TempData["ErrorMessage"] = "No claims selected to approve.";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("HRDashboard");
         }
 
+        // Summary report of approved claims
         public async Task<IActionResult> SummaryReport()
         {
             var approvedClaims = await _claimService.GetClaimsAsync(ClaimStatus.Approved);
+            var lecturers = await _lecturerService.GetLecturersAsync();
 
+            // Map lecturer names safely
             var summary = approvedClaims
                 .GroupBy(c => c.LecturerId)
-                .Select(g => new HRClaimSummaryViewModel
+                .Select(g =>
                 {
-                    LecturerName = g.First().Lecturer.FullName,
-                    TotalHours = g.Sum(c => c.HoursWorked),
-                    TotalPayment = g.Sum(c => c.HoursWorked * c.HourlyRate)
+                    var lecturer = lecturers.FirstOrDefault(l => l.Id == g.Key);
+                    return new HRClaimSummaryViewModel
+                    {
+                        LecturerName = lecturer?.FullName ?? "Unknown",
+                        TotalHours = g.Sum(c => c.HoursWorked),
+                        TotalPayment = g.Sum(c => c.HoursWorked * c.HourlyRate)
+                    };
                 })
                 .ToList();
 
@@ -88,9 +101,8 @@ namespace ContractClaimSystem.Controllers
                 GrandTotalPayment = grandTotalPayment
             };
 
-            return View(model);
+            return View(model); // Points to SummaryReport.cshtml
         }
-
 
         // Update lecturer info
         [HttpPost]
@@ -106,7 +118,7 @@ namespace ContractClaimSystem.Controllers
                 TempData["ErrorMessage"] = "Invalid lecturer ID.";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("HRDashboard");
         }
     }
 }

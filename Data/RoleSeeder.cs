@@ -8,7 +8,7 @@ public static class RoleSeeder
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        string[] roles = new[] { "Lecturer", "Coordinator", "Manager" };
+        string[] roles = new[] { "Lecturer", "Coordinator", "Manager","HR" };
 
         foreach (var role in roles)
         {
