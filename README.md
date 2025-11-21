@@ -83,4 +83,99 @@ Lecturers can attach multiple files per claim.
 
 Coordinators and managers can view uploaded files when reviewing claims.
 
+...Login Credentials (Demo Accounts)...
+Role	Email	Password	Redirect Page
+Coordinator	coord1@claims.com
+	Coord@123	CoordinatorDashboard
+Lecturer	lecturer1@claims.com
+	Lect@123	LecturerDashboard
+Manager	manager@claims.com
+	Manager@123	ManagerDashboard
+HR (NEW)	hruser@claims.com
+	Hr@123	HRDashboard
+
+PART 3 – Automation Enhancements (POE Requirements)
+
+These improvements elevate the system with automation, validation, and streamlined processing.
+
+✨ Lecturer View Automation
+“The auto-calculation feature and validation checks are implemented exceptionally well, ensuring accurate and comprehensive claim submissions.”
+
+✔ Automated total calculation:
+Total Amount = Hours × Rate (calculated instantly)
+✔ Validation checks before submission:
+
+Required fields
+
+Valid hours
+
+Valid rate
+
+Prevent duplicate submissions for the same month
+✔ Real-time visual feedback
+✔ Auto-display of claim totals on the dashboard
+
+✨ Coordinator & Manager Automation
+“Automated verification and approval processes streamline and ensure error-free claim processing.”
+
+✔ Automatic verification checks:
+
+Ensures claim fields are valid
+
+Ensures documents are attached where required
+
+Highlights missing data or inconsistencies
+
+✔ Coordinators/Managers can approve/reject in one click
+✔ Automatic status updates
+✔ Automated logging of approval actions
+✔ Dashboards update instantly after decisions
+
+ HR Automation (NEW FEATURE)
+“Automation of claim processing and lecturer data management significantly streamlines administrative processes.”
+
+✔ Automatic retrieval of all approved claims
+✔ Auto-calculation:
+
+Total hours per lecturer
+
+Total payout per lecturer
+
+Grand totals for payroll
+
+✔ HR Summary Reports automatically generated
+✔ Auto-sync lecturer details (email, phone, etc.)
+✔ Error-handling ensures missing lecturers don’t break the system
+✔ HR can update lecturer details through automated forms
+✔ Eliminates manual payroll calculations
+
+8. Visual Representation
+
+(Your screenshot of the Lecturer Dashboard goes here.)
+
+9. Video Demonstration
+
+YouTube Link:
+
+
+...Conclusion...
+
+The Contract Monthly Claim System provides:
+
+A fully automated workflow
+
+Accurate financial calculations
+
+Streamlined approval pipeline
+
+Better communication between lecturers and administration
+
+Reduced manual work for HR
+
+A secure, modern, and user-friendly digital claims platform
+
+The latest automation upgrades further enhance system performance and efficiency, aligning with the POE requirements by demonstrating automation across Lecturer, Coordinator/Manager, and HR views.
+
+
+
 
