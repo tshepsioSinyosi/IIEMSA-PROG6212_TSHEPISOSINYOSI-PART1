@@ -83,23 +83,28 @@ namespace ContractClaimSystem.Controllers
                 };
                 claim.RequiresReview = false;
 
-                if (claim.HourlyRate < 100 || claim.HourlyRate > 500 || claim.HoursWorked < 5 || claim.HoursWorked > 160)
-                {
-                    claim.RequiresReview = true;
-                }
-                if (vm.SupportingFiles == null || !vm.SupportingFiles.Any())
+                // RULE 1 – Validate ranges
+                bool invalidRate = claim.HourlyRate < 100 || claim.HourlyRate > 500;
+                bool invalidHours = claim.HoursWorked < 5 || claim.HoursWorked > 160;
+
+                if (invalidRate || invalidHours)
                 {
                     claim.RequiresReview = true;
                 }
 
-                if (!claim.RequiresReview)
+                // RULE 2 – Optional: only force review if ZERO supporting files AND notes empty
+                // Remove this if you do NOT want files to affect auto-approval
+                bool noDocs = vm.SupportingFiles == null || !vm.SupportingFiles.Any();
+                bool noNotes = string.IsNullOrWhiteSpace(vm.Notes);
+
+                if (noDocs && noNotes)
                 {
-                    claim.Status = ClaimStatus.Approved; // Auto-approve
+                    claim.RequiresReview = true;
                 }
-                else
-                {
-                    claim.Status = ClaimStatus.Pending; // Needs coordinator review
-                }
+
+                // AUTO-APPROVE if all rules passed
+                claim.Status = claim.RequiresReview ? ClaimStatus.Pending : ClaimStatus.Approved;
+
 
 
                 // Save claim first to get ClaimId for supporting documents
