@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ContractClaimSystem.Models;
+using Microsoft.AspNetCore.Mvc;
 
 public class LecturerController : Controller
 {
@@ -17,7 +18,7 @@ public class LecturerController : Controller
     // Submit Claim
     public IActionResult SubmitClaim()
     {
-        return View();
+        return View(new ClaimSubmissionViewModel());
     }
 
     // Upload Document

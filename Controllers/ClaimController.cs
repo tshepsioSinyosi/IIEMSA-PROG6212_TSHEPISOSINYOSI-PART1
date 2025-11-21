@@ -1,9 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using ContractClaimSystem.Models;
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
-using AppClaim = ContractClaimSystem.Models.Claim;
+
+using ClaimEntity = ContractClaimSystem.Models.Claim;
+using ContractClaimSystem.Models;
 
 namespace ContractClaimSystem.Controllers
 {
@@ -12,125 +18,132 @@ namespace ContractClaimSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IFileStorageService _fileStorageService;
+        private readonly ILogger<ClaimController> _logger;
 
-        public ClaimController(ApplicationDbContext context, IFileStorageService fileStorageService)
+        public ClaimController(
+            ApplicationDbContext context,
+            IFileStorageService fileStorageService,
+            ILogger<ClaimController> logger)
         {
             _context = context;
             _fileStorageService = fileStorageService;
+            _logger = logger;
         }
 
-        // ===========================
-        // 1️⃣ SUBMIT CLAIM (Lecturer)
-        // ===========================
+        // GET: Show submission form (uses ClaimSubmissionViewModel)
         [HttpGet]
         [Authorize(Roles = "Lecturer")]
-        public IActionResult Submit()
+        public IActionResult SubmitClaim()
         {
-            return View();
+            var vm = new ClaimSubmissionViewModel();
+            return View(vm);
         }
 
+        // POST: Submit claim (accepts ClaimSubmissionViewModel)
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Lecturer")]
-        public async Task<IActionResult> Submit(ClaimSubmissionViewModel model)
+        public async Task<IActionResult> SubmitClaim(ClaimSubmissionViewModel vm)
         {
             try
             {
                 if (!ModelState.IsValid)
-                    return View(model);
-
-                // 1️⃣ Validate hours
-                if (model.HoursWorked <= 0)
                 {
-                    ModelState.AddModelError("HoursWorked", "Hours worked must be greater than 0.");
-                    return View(model);
+                    TempData["Error"] = "Some fields are missing or invalid.";
+                    return View("SubmitClaim", vm);
                 }
 
-                // 2️⃣ Validate rate
-                if (model.HourlyRate <= 0)
+                // Get logged-in lecturer id
+                var lecturerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(lecturerId))
                 {
-                    ModelState.AddModelError("HourlyRate", "Hourly rate must be greater than 0.");
-                    return View(model);
+                    TempData["Error"] = "User is not logged in.";
+                    _logger.LogWarning("Submit: no logged-in user found.");
+                    return View("SubmitClaim", vm);
                 }
 
-                // 3️⃣ Auto-calc (server enforced)
-                var calculatedTotal = model.HoursWorked * model.HourlyRate;
-
-                if (calculatedTotal <= 0)
+                // Ensure the user exists in DB
+                var lecturerExists = await _context.Users.AnyAsync(u => u.Id == lecturerId);
+                if (!lecturerExists)
                 {
-                    ModelState.AddModelError("", "Total amount cannot be zero or negative.");
-                    return View(model);
+                    TempData["Error"] = "Lecturer not found in system.";
+                    _logger.LogWarning("Submit: lecturer {LecturerId} not present in Users table.", lecturerId);
+                    return View("SubmitClaim", vm);
                 }
 
-                // 4️⃣ Ensure ONLY the calculated value is used
-                // (Prevents users from editing the value using browser tools)
-                decimal finalTotalAmount = calculatedTotal;
-
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                // 5️⃣ Ensure a claim can only be submitted once per day
-                bool alreadySubmitted = await _context.Claims
-                    .AnyAsync(c => c.LecturerId == userId &&
-                                   c.SubmissionDate.Date == DateTime.Now.Date);
-
-                if (alreadySubmitted)
+                // Map ViewModel -> Entity
+                var claim = new ClaimEntity
                 {
-                    ModelState.AddModelError("", "❌ You already submitted a claim today.");
-                    return View(model);
-                }
-
-                // 6️⃣ Create Claim entity
-                var claim = new AppClaim
-                {
-                    LecturerId = userId,
-                    HoursWorked = model.HoursWorked,
-                    HourlyRate = model.HourlyRate,
-                    TotalAmount = finalTotalAmount,   // Automation enforced here
-                    AdditionalNotes = model.Notes,
-                    SubmissionDate = DateTime.Now,
+                    LecturerId = lecturerId,
+                    HoursWorked = vm.HoursWorked,
+                    HourlyRate = vm.HourlyRate,
+                    AdditionalNotes = vm.Notes ?? string.Empty,
+                    SubmissionDate = DateTime.UtcNow,
                     Status = ClaimStatus.Pending
                 };
+                claim.RequiresReview = false;
 
+                if (claim.HourlyRate < 100 || claim.HourlyRate > 500 || claim.HoursWorked < 5 || claim.HoursWorked > 160)
+                {
+                    claim.RequiresReview = true;
+                }
+                if (vm.SupportingFiles == null || !vm.SupportingFiles.Any())
+                {
+                    claim.RequiresReview = true;
+                }
+
+                if (!claim.RequiresReview)
+                {
+                    claim.Status = ClaimStatus.Approved; // Auto-approve
+                }
+                else
+                {
+                    claim.Status = ClaimStatus.Pending; // Needs coordinator review
+                }
+
+
+                // Save claim first to get ClaimId for supporting documents
                 _context.Claims.Add(claim);
                 await _context.SaveChangesAsync();
 
-                // 7️⃣ Handle file uploads
-                if (model.SupportingFiles != null && model.SupportingFiles.Count > 0)
+                // Handle file uploads (if any)
+                if (vm.SupportingFiles != null && vm.SupportingFiles.Any())
                 {
-                    foreach (var file in model.SupportingFiles)
+                    foreach (var file in vm.SupportingFiles)
                     {
-                        if (file.Length > 0)
+                        if (file == null || file.Length == 0) continue;
+
+                        // NOTE: IFileStorageService.SaveFileAsync expected to return a tuple:
+                        //    Task<(string storedFileName, string filePath)>
+                        // If your implementation returns just string filePath, change the line below accordingly.
+                        var (storedFileName, filePath) = await _fileStorageService.SaveFileAsync(file);
+
+                        var doc = new SupportingDocument
                         {
-                            var (storedFile, filePath) = await _fileStorageService.SaveFileAsync(file);
+                            ClaimId = claim.ClaimId,
+                            FileName = storedFileName,
+                            FilePath = filePath
+                        };
 
-                            var doc = new SupportingDocument
-                            {
-                                ClaimId = claim.ClaimId,
-                                FileName = file.FileName,
-                                FilePath = filePath,
-                                UploadDate = DateTime.UtcNow
-                            };
-
-                            _context.SupportingDocuments.Add(doc);
-                        }
+                        _context.SupportingDocuments.Add(doc);
                     }
+
                     await _context.SaveChangesAsync();
                 }
 
-                TempData["SuccessMessage"] = "✅ Claim submitted successfully!";
-                return RedirectToAction(nameof(MyClaims));
+                TempData["Success"] = "Claim submitted successfully!";
+                _logger.LogInformation("Claim {ClaimId} submitted by {LecturerId}.", claim.ClaimId, lecturerId);
+                return RedirectToAction("MyClaims");
             }
             catch (Exception ex)
             {
-                // ⭐ CLEAR AUTOMATED ERROR FEEDBACK
-                TempData["ErrorMessage"] = $"❌ An error occurred: {ex.Message}";
-                return View(model);
+                _logger.LogError(ex, "ERROR submitting claim for user {User}", User?.Identity?.Name ?? "unknown");
+                TempData["Error"] = "Unexpected error while submitting claim: " + ex.Message;
+                return View("SubmitClaim", vm);
             }
         }
 
-        // ===========================
-        // 2️⃣ VIEW CLAIMS (Lecturer)
-        // ===========================
+        // Lecturer's claims
         [Authorize(Roles = "Lecturer")]
         public async Task<IActionResult> MyClaims()
         {
@@ -144,9 +157,7 @@ namespace ContractClaimSystem.Controllers
             return View(claims);
         }
 
-        // ===========================
-        // 3️⃣ VIEW PENDING (Coordinator & Manager)
-        // ===========================
+        // Other actions unchanged...
         [Authorize(Roles = "Coordinator,Manager")]
         public async Task<IActionResult> PendingClaims()
         {
@@ -160,9 +171,6 @@ namespace ContractClaimSystem.Controllers
             return View(claims);
         }
 
-        // ===========================
-        // 4️⃣ APPROVE / REJECT ACTIONS
-        // ===========================
         [Authorize(Roles = "Coordinator,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -172,6 +180,7 @@ namespace ContractClaimSystem.Controllers
             if (claim == null) return NotFound();
 
             claim.Status = ClaimStatus.Approved;
+            claim.ReviewDate = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "✅ Claim approved!";
@@ -187,15 +196,13 @@ namespace ContractClaimSystem.Controllers
             if (claim == null) return NotFound();
 
             claim.Status = ClaimStatus.Rejected;
+            claim.ReviewDate = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             TempData["ErrorMessage"] = "❌ Claim rejected!";
             return RedirectToAction(nameof(PendingClaims));
         }
 
-        // ===========================
-        // 5️⃣ CLAIM DETAILS
-        // ===========================
         public async Task<IActionResult> Details(int id)
         {
             var claim = await _context.Claims
@@ -207,9 +214,6 @@ namespace ContractClaimSystem.Controllers
             return View(claim);
         }
 
-        // ===========================
-        // 6️⃣ EDIT (Lecturer only)
-        // ===========================
         [HttpGet]
         [Authorize(Roles = "Lecturer")]
         public async Task<IActionResult> Edit(int id)
@@ -223,7 +227,7 @@ namespace ContractClaimSystem.Controllers
         [HttpPost]
         [Authorize(Roles = "Lecturer")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, AppClaim updated)
+        public async Task<IActionResult> Edit(int id, ClaimEntity updated)
         {
             var claim = await _context.Claims.FindAsync(id);
             if (claim == null) return NotFound();
@@ -231,16 +235,13 @@ namespace ContractClaimSystem.Controllers
             claim.HoursWorked = updated.HoursWorked;
             claim.HourlyRate = updated.HourlyRate;
             claim.AdditionalNotes = updated.AdditionalNotes;
-            
+
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "✏️ Claim updated successfully!";
-            return RedirectToAction(nameof(MyClaims));
+            return RedirectToAction(nameof(MyClaims)); 
         }
 
-        // ===========================
-        // 7️⃣ DELETE (Lecturer only)
-        // ===========================
         [Authorize(Roles = "Lecturer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -252,9 +253,16 @@ namespace ContractClaimSystem.Controllers
             var docs = _context.SupportingDocuments.Where(d => d.ClaimId == id).ToList();
             foreach (var doc in docs)
             {
-                await _fileStorageService.DeleteFileAsync(doc.FilePath);
+                try
+                {
+                    await _fileStorageService.DeleteFileAsync(doc.FilePath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed deleting file {FilePath}", doc.FilePath);
+                }
             }
-            _context.SupportingDocuments.RemoveRange(docs);
+            _context.SupportingDocuments.RemoveRange(docs); 
 
             _context.Claims.Remove(claim);
             await _context.SaveChangesAsync();

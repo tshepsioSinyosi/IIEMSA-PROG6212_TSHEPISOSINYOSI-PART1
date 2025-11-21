@@ -10,9 +10,10 @@
     <p class="lead text-muted">A record of all your submitted monthly claims and their current status.</p>
 
     <!-- Link to Submit New Claim -->
-    <a asp-controller="Claim" asp-action="Submit" class="btn btn-primary btn-lg mb-4 shadow-sm">
+    <a asp-controller="Claim" asp-action="SubmitClaim" class="btn btn-primary btn-lg mb-4 shadow-sm">
         <i class="fas fa-plus-circle me-2"></i> Submit New Claim
     </a>
+
 
     @if (Model == null || !Model.Any())
     {
@@ -65,7 +66,7 @@
                                 var isLatePending = claim.Status == ClaimStatus.Pending && (DateTime.Now - claim.SubmissionDate).Days > 30;
                                 <tr class="@(isLatePending ? "table-danger" : "")">
                                     <td>@claim.ClaimId</td>
-                                    <td>@claim.SubmissionDate.ToShortDateString()</td>
+                                    <td>@claim.SubmissionDate.ToString("MMMM yyyy")</td>
                                     <td>@claim.HoursWorked</td>
                                     <td>@((decimal)claim.HoursWorked * claim.HourlyRate).ToString("C")</td>
                                     <td>
@@ -118,7 +119,7 @@
         const statusFilter = document.getElementById('statusFilter');
         const tableRows = document.querySelectorAll('table tbody tr');
 
-        function filterTable() {
+                function filterTable() {
             const selectedMonth = monthFilter.value;
             const selectedStatus = statusFilter.value;
 
@@ -127,11 +128,13 @@
                 const rowStatus = row.cells[4].innerText.trim(); // Status column
 
                 const monthMatch = !selectedMonth || rowMonth.includes(selectedMonth);
-                const statusMatch = !selectedStatus || rowStatus === selectedStatus;
+                const statusMatch = !selectedStatus || rowStatus.toLowerCase() === selectedStatus.toLowerCase();
 
                 row.style.display = (monthMatch && statusMatch) ? '' : 'none';
             });
         }
+
+        
 
         monthFilter.addEventListener('change', filterTable);
         statusFilter.addEventListener('change', filterTable);

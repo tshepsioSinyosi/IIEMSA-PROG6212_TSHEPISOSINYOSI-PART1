@@ -14,10 +14,12 @@ namespace ContractClaimSystem.Models
         public decimal HoursWorked { get; set; }
 
         public decimal HourlyRate { get; set; }
+
         [NotMapped]
-        public decimal TotalAmount { get; set; }
+        public decimal TotalAmount => HoursWorked * HourlyRate;
 
 
+        public bool RequiresReview { get; set; } = false;
 
 
         public string AdditionalNotes { get; set; } = string.Empty;

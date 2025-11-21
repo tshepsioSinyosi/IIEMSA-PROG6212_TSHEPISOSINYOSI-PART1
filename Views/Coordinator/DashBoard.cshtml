@@ -53,7 +53,9 @@
                         <tbody>
                             @foreach (var claim in Model)
                             {
-                                <tr>
+                                // Flag if claim has no supporting documents
+                                var missingDocs = claim.SupportingDocuments == null || !claim.SupportingDocuments.Any();
+                                <tr class="@(missingDocs ? "table-danger" : "")">
                                     <td>@claim.ClaimId</td>
                                     <td>@claim.Lecturer?.FullName</td>
                                     <td>@claim.SubmissionDate.ToShortDateString()</td>
@@ -70,7 +72,13 @@
                                                 <span class="badge bg-danger fw-bold">REJECTED</span>
                                                 break;
                                             default:
-                                                <span class="badge bg-warning text-dark fw-bold">PENDING</span>
+                                                <span class="badge bg-warning text-dark fw-bold">
+                                                    PENDING
+                                                    @if (missingDocs)
+                                                    {
+                                                        <span title="Missing supporting documents" class="ms-1 text-danger">&#9888;</span>
+                                                    }
+                                                </span>
                                                 break;
                                         }
                                     </td>
@@ -89,6 +97,7 @@
                                 </tr>
                             }
                         </tbody>
+
                     </table>
                 </div>
             </div>

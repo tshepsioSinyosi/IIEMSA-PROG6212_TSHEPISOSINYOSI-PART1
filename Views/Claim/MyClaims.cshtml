@@ -7,7 +7,10 @@
 
 <div class="container py-5">
     <h2 class="mb-4 text-secondary">Your Claim History & Status</h2>
-    <p class="lead text-muted">A record of all your submitted claims and their current status.</p>
+    <p class="lead text-muted">
+        A record of all your submitted claims and their current status.
+        Highlighted rows indicate claims flagged for review.
+    </p>
 
     <!-- Link to Submit New Claim -->
     <a asp-controller="Claim" asp-action="SubmitClaim" class="btn btn-primary btn-lg mb-4 shadow-sm">
@@ -22,6 +25,29 @@
     }
     else
     {
+        <!-- Filters -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>Filter by Month:</label>
+                <select id="monthFilter" class="form-select">
+                    <option value="">All</option>
+                    @foreach (var month in Model.Select(c => c.SubmissionDate.ToString("MMMM yyyy")).Distinct())
+                    {
+                        <option value="@month">@month</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label>Filter by Status:</label>
+                <select id="statusFilter" class="form-select">
+                    <option value="">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+            </div>
+        </div>
+
         <div class="card shadow">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -34,6 +60,7 @@
                                 <th>Hourly Rate</th>
                                 <th>Total Amount</th>
                                 <th>Status</th>
+                                <th>Review</th>
                                 <th>Documents</th>
                                 <th>Details</th>
                             </tr>
@@ -41,12 +68,14 @@
                         <tbody>
                             @foreach (var claim in Model)
                             {
-                                <tr>
+                                var rowClass = claim.RequiresReview ? "table-warning" : "";
+                                <tr class="@rowClass">
                                     <td>@claim.ClaimId</td>
                                     <td>@claim.SubmissionDate.ToShortDateString()</td>
                                     <td>@claim.HoursWorked</td>
-                                    <td>@claim.HourlyRate.ToString("C")</td>
-                                    <td>@claim.TotalAmount.ToString("C")</td>
+                                    <td>@claim.HourlyRate</td>
+                                    <td>@claim.TotalAmount</td>
+
                                     <td>
                                         @switch (claim.Status)
                                         {
@@ -61,6 +90,18 @@
                                                 break;
                                         }
                                     </td>
+
+                                    <td>
+                                        @if (claim.RequiresReview)
+                                        {
+                                            <span class="text-danger fw-bold">Flagged for review</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success fw-bold">Auto-approved</span>
+                                        }
+                                    </td>
+
                                     <td>
                                         @if (claim.SupportingDocuments != null && claim.SupportingDocuments.Any())
                                         {
@@ -78,6 +119,7 @@
                                             <span class="text-muted">None</span>
                                         }
                                     </td>
+
                                     <td>
                                         <a asp-controller="Claim" asp-action="Details" asp-route-id="@claim.ClaimId" class="btn btn-sm btn-outline-info">
                                             <i class="fas fa-eye"></i> View
@@ -86,9 +128,46 @@
                                 </tr>
                             }
                         </tbody>
+
+                        <tfoot class="table-light fw-bold">
+                            <tr>
+                                <td colspan="2" class="text-end">Totals:</td>
+                                <td>@Model.Sum(c => c.HoursWorked)</td>
+                                <td>-</td>
+                                <td>@Model.Sum(c => c.TotalAmount)</td>
+                                <td colspan="4"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        const monthFilter = document.getElementById('monthFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const tableRows = document.querySelectorAll('table tbody tr');
+
+        function filterTable() {
+            const selectedMonth = monthFilter.value;
+            const selectedStatus = statusFilter.value;
+
+            tableRows.forEach(row => {
+                const rowMonth = row.cells[1].innerText; // Submission Date
+                const rowStatus = row.cells[4].innerText.trim(); // Status column (text number may vary)
+                const rowStatusBadge = row.cells[5].innerText.trim(); // Badge text
+
+                const monthMatch = !selectedMonth || rowMonth.includes(selectedMonth);
+                const statusMatch = !selectedStatus || rowStatusBadge === selectedStatus;
+
+                row.style.display = (monthMatch && statusMatch) ? '' : 'none';
+            });
+        }
+
+        monthFilter.addEventListener('change', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+    </script>
+}
